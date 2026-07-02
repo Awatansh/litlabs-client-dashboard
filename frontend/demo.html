@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LitLabs | Client Dashboard — Bright Future Wellness</title>
+  <meta name="description" content="Your business growth control center. See all results, approve work, and track progress in one place." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0F172A; color: #F8FAFC; }
+
+    /* Glassmorphism card */
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+      border-radius: 16px;
+      transition: all 0.3s ease;
+    }
+    .glass-card:hover {
+      border-color: rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 24px rgba(59, 130, 246, 0.08);
+      transform: translateY(-1px);
+    }
+
+    /* Sidebar */
+    .sidebar { background: rgba(15, 23, 42, 0.95); border-right: 1px solid rgba(51, 65, 85, 0.5); }
+    .nav-item { transition: all 0.2s; border-radius: 10px; }
+    .nav-item:hover { background: rgba(59, 130, 246, 0.1); color: #60A5FA; }
+    .nav-item.active { background: rgba(59, 130, 246, 0.15); color: #3B82F6; border: 1px solid rgba(59, 130, 246, 0.2); }
+
+    /* Gradient text */
+    .gradient-text { background: linear-gradient(135deg, #3B82F6, #6366F1, #8B5CF6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .gradient-bg { background: linear-gradient(135deg, #1E3A5F, #1E1B4B); }
+
+    /* Metric cards */
+    .metric-up { color: #10B981; }
+    .metric-down { color: #EF4444; }
+    .metric-neutral { color: #F59E0B; }
+
+    /* Progress bar */
+    .progress-bar { background: rgba(51, 65, 85, 0.5); border-radius: 99px; overflow: hidden; height: 6px; }
+    .progress-fill { border-radius: 99px; height: 100%; transition: width 1s ease; }
+
+    /* Badge */
+    .badge-active { background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-risk { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-pending { background: rgba(99, 102, 241, 0.15); color: #818CF8; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .badge-done { background: rgba(71, 85, 105, 0.4); color: #94A3B8; border: 1px solid rgba(71, 85, 105, 0.3); }
+
+    /* Page transitions */
+    .page { display: none; }
+    .page.active { display: block; animation: fadeInUp 0.4s ease; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Counter animation */
+    .counter { transition: all 0.3s; }
+
+    /* Approval item */
+    .approval-card { background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 12px; }
+    .approval-card:hover { border-color: rgba(99, 102, 241, 0.3); }
+
+    /* Notification badge */
+    .notif-badge { background: #EF4444; color: white; border-radius: 99px; font-size: 11px; font-weight: 700; padding: 1px 6px; }
+
+    /* Chart container */
+    .chart-wrapper { position: relative; height: 200px; }
+
+    /* Tooltip */
+    [data-tooltip]:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      background: #1E293B;
+      border: 1px solid #334155;
+      color: #CBD5E1;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
+      z-index: 100;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 99px; }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .sidebar { position: fixed; left: -280px; top: 0; height: 100vh; z-index: 50; transition: left 0.3s; width: 260px; }
+      .sidebar.open { left: 0; }
+      .main-content { margin-left: 0 !important; }
+      .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40; }
+      .mobile-overlay.open { display: block; }
+    }
+  </style>
+</head>
+<body class="min-h-screen overflow-x-hidden">
+
+<!-- Mobile overlay -->
+<div class="mobile-overlay" id="mobileOverlay" onclick="toggleSidebar()"></div>
+
+<!-- Layout -->
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="sidebar w-64 flex-shrink-0 flex flex-col p-4 fixed h-full overflow-y-auto z-50" id="sidebar">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 px-2 mb-8 mt-2">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#3B82F6,#6366F1)">
+        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/></svg>
+      </div>
+      <div>
+        <div class="text-sm font-bold text-white">LitLabs</div>
+        <div class="text-xs text-slate-400">Client Portal</div>
+      </div>
+    </div>
+
+    <!-- Client badge -->
+    <div class="mb-6 px-2">
+      <div class="glass-card p-3 rounded-xl">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-sm">B</div>
+          <div>
+            <div class="text-xs font-semibold text-white">Bright Future Wellness</div>
+            <div class="text-xs text-slate-500">Growth Partner Plan</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 space-y-1">
+      <div class="text-xs text-slate-500 uppercase font-semibold px-3 mb-2">Overview</div>
+      <button onclick="showPage('overview')" class="nav-item active w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium" id="nav-overview">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </button>
+
+      <div class="text-xs text-slate-500 uppercase font-semibold px-3 mb-2 mt-4">Performance</div>
+      <button onclick="showPage('marketing')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-300" id="nav-marketing">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Marketing
+      </button>
+      <button onclick="showPage('seo')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-300" id="nav-seo">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        SEO & Organic
+      </button>
+      <button onclick="showPage('automation')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-300" id="nav-automation">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        AI Automation
+      </button>
+
+      <div class="text-xs text-slate-500 uppercase font-semibold px-3 mb-2 mt-4">Work</div>
+      <button onclick="showPage('projects')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-300" id="nav-projects">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Projects
+      </button>
+      <button onclick="showPage('approvals')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-300 relative" id="nav-approvals">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Approvals
+        <span class="ml-auto notif-badge" id="approvals-badge">2</span>
+      </button>
+      <button onclick="showPage('deliverables')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-300" id="nav-deliverables">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+        Deliverables
+      </button>
+      <button onclick="showPage('reports')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-300" id="nav-reports">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Reports
+      </button>
+    </nav>
+
+    <!-- User -->
+    <div class="mt-4 pt-4 border-t border-slate-800">
+      <div class="flex items-center gap-3 px-2 py-2">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm">SM</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium text-white truncate">Sarah Mitchell</div>
+          <div class="text-xs text-slate-500">Owner</div>
+        </div>
+        <button class="text-slate-500 hover:text-slate-300 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content flex-1 ml-64 min-h-screen flex flex-col">
+
+    <!-- Top bar -->
+    <header class="sticky top-0 z-40 flex items-center justify-between px-8 py-4" style="background:rgba(15,23,42,0.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(51,65,85,0.4)">
+      <div class="flex items-center gap-4">
+        <button class="md:hidden text-slate-400" onclick="toggleSidebar()">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div>
+          <h1 class="text-lg font-semibold text-white" id="pageTitle">Dashboard Overview</h1>
+          <p class="text-xs text-slate-500">Last updated: just now · Data as of Jul 2, 2026</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <!-- Date range -->
+        <div class="hidden md:flex items-center gap-2 glass-card px-3 py-1.5 rounded-lg cursor-pointer">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <span class="text-sm text-slate-300">Last 30 days</span>
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <!-- Notifications -->
+        <button class="relative p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" onclick="showPage('overview')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <div class="flex-1 p-8">
+
+      <!-- ==================== OVERVIEW PAGE ==================== -->
+      <div class="page active" id="page-overview">
+        <!-- Greeting -->
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold text-white mb-1">Good evening, Sarah! 👋</h2>
+          <p class="text-slate-400">Here's your business growth snapshot for the last 30 days.</p>
+        </div>
+
+        <!-- Action Required Banner -->
+        <div class="mb-6 glass-card p-4 rounded-2xl border border-amber-500/20 bg-amber-500/5">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-amber-300">2 items need your attention</p>
+              <p class="text-xs text-amber-400/70">Ad creatives and email sequence are waiting for your approval.</p>
+            </div>
+            <button onclick="showPage('approvals')" class="text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-all">
+              Review Now →
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="glass-card p-5">
+            <div class="flex items-start justify-between mb-3">
+              <div class="p-2 rounded-xl bg-blue-500/10">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <span class="text-xs font-semibold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-lg">↑ 12.4%</span>
+            </div>
+            <div class="text-2xl font-bold text-white mb-0.5 tabular-nums" data-counter="8450">8,450</div>
+            <div class="text-sm text-slate-400">Website Visitors</div>
+            <div class="text-xs text-slate-500 mt-1">vs 7,517 last month</div>
+          </div>
+          <div class="glass-card p-5">
+            <div class="flex items-start justify-between mb-3">
+              <div class="p-2 rounded-xl bg-emerald-500/10">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+              </div>
+              <span class="text-xs font-semibold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-lg">↑ 14.2%</span>
+            </div>
+            <div class="text-2xl font-bold text-white mb-0.5 tabular-nums">127</div>
+            <div class="text-sm text-slate-400">New Leads</div>
+            <div class="text-xs text-slate-500 mt-1">vs 111 last month</div>
+          </div>
+          <div class="glass-card p-5">
+            <div class="flex items-start justify-between mb-3">
+              <div class="p-2 rounded-xl bg-indigo-500/10">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <span class="text-xs font-semibold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-lg">↑ 5.7%</span>
+            </div>
+            <div class="text-2xl font-bold text-white mb-0.5 tabular-nums">3.2x</div>
+            <div class="text-sm text-slate-400">Return on Ad Spend</div>
+            <div class="text-xs text-slate-500 mt-1">$3,548 spent → $11,354 value</div>
+          </div>
+          <div class="glass-card p-5">
+            <div class="flex items-start justify-between mb-3">
+              <div class="p-2 rounded-xl bg-violet-500/10">
+                <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+              <span class="text-xs font-semibold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-lg">↑ 8 hrs</span>
+            </div>
+            <div class="text-2xl font-bold text-white mb-0.5 tabular-nums">47 hrs</div>
+            <div class="text-sm text-slate-400">Saved by AI Automation</div>
+            <div class="text-xs text-slate-500 mt-1">This month across 5 workflows</div>
+          </div>
+        </div>
+
+        <!-- Middle section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <!-- Active Projects -->
+          <div class="lg:col-span-2 glass-card p-6">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-semibold text-white">Active Projects</h3>
+              <button onclick="showPage('projects')" class="text-xs text-blue-400 hover:text-blue-300">View all →</button>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between text-sm mb-1.5">
+                  <span class="text-slate-200 font-medium">Q3 Lead Generation Campaign</span>
+                  <span class="text-slate-400">65%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill bg-gradient-to-r from-blue-500 to-indigo-500" style="width:65%"></div></div>
+                <div class="flex items-center gap-2 mt-1.5">
+                  <span class="badge-active text-xs px-2 py-0.5 rounded-full font-medium">On Track</span>
+                  <span class="text-xs text-slate-500">Next: Campaign launch in 5 days</span>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm mb-1.5">
+                  <span class="text-slate-200 font-medium">Website SEO Overhaul</span>
+                  <span class="text-slate-400">40%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill bg-gradient-to-r from-emerald-500 to-teal-500" style="width:40%"></div></div>
+                <div class="flex items-center gap-2 mt-1.5">
+                  <span class="badge-active text-xs px-2 py-0.5 rounded-full font-medium">On Track</span>
+                  <span class="text-xs text-slate-500">Technical audit complete</span>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm mb-1.5">
+                  <span class="text-slate-200 font-medium">Email Marketing Automation</span>
+                  <span class="text-slate-400">80%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill bg-gradient-to-r from-violet-500 to-purple-500" style="width:80%"></div></div>
+                <div class="flex items-center gap-2 mt-1.5">
+                  <span class="badge-risk text-xs px-2 py-0.5 rounded-full font-medium">Awaiting Approval</span>
+                  <span class="text-xs text-slate-500">Email sequence needs review</span>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm mb-1.5">
+                  <span class="text-slate-200 font-medium">Brand Content Calendar</span>
+                  <span class="text-slate-400">55%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill bg-gradient-to-r from-amber-500 to-orange-500" style="width:55%"></div></div>
+                <div class="flex items-center gap-2 mt-1.5">
+                  <span class="badge-active text-xs px-2 py-0.5 rounded-full font-medium">On Track</span>
+                  <span class="text-xs text-slate-500">August content in production</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Upcoming Milestones -->
+          <div class="glass-card p-6">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-semibold text-white">Upcoming Milestones</h3>
+            </div>
+            <div class="space-y-4">
+              <div class="flex items-start gap-3">
+                <div class="w-2 h-2 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></div>
+                <div>
+                  <div class="text-sm font-medium text-white">Campaign Launch</div>
+                  <div class="text-xs text-slate-400">Q3 Lead Gen Campaign</div>
+                  <div class="text-xs text-amber-400 mt-0.5 font-medium">In 5 days</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-2 h-2 rounded-full bg-violet-400 mt-1.5 flex-shrink-0"></div>
+                <div>
+                  <div class="text-sm font-medium text-white">Email Sequence Launch</div>
+                  <div class="text-xs text-slate-400">Email Marketing Automation</div>
+                  <div class="text-xs text-amber-400 mt-0.5 font-medium">In 15 days</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0"></div>
+                <div>
+                  <div class="text-sm font-medium text-white">First Performance Review</div>
+                  <div class="text-xs text-slate-400">Q3 Lead Gen Campaign</div>
+                  <div class="text-xs text-slate-500 mt-0.5">In 20 days</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-2 h-2 rounded-full bg-slate-500 mt-1.5 flex-shrink-0"></div>
+                <div>
+                  <div class="text-sm font-medium text-white">Monthly Report</div>
+                  <div class="text-xs text-slate-400">Auto-generated</div>
+                  <div class="text-xs text-slate-500 mt-0.5">In 29 days</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="glass-card p-6">
+          <h3 class="font-semibold text-white mb-5">Recent Activity</h3>
+          <div class="space-y-3">
+            <div class="flex items-start gap-3 py-2.5 border-b border-slate-700/50">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-3.5 h-3.5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm text-slate-200">SEO Audit Report approved by you</p>
+                <p class="text-xs text-slate-500">2 days ago</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 py-2.5 border-b border-slate-700/50">
+              <div class="w-7 h-7 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-3.5 h-3.5 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm text-slate-200">Ad Creatives — Set A uploaded for review</p>
+                <p class="text-xs text-slate-500">3 days ago</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 py-2.5 border-b border-slate-700/50">
+              <div class="w-7 h-7 rounded-full bg-violet-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-3.5 h-3.5 text-violet-400" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm text-slate-200">AI automation saved 12 minutes: Lead synced to CRM</p>
+                <p class="text-xs text-slate-500">4 days ago</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 py-2.5">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5z"/></svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm text-slate-200">SEO Overhaul project milestone completed: Technical audit</p>
+                <p class="text-xs text-slate-500">5 days ago</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== MARKETING PAGE ==================== -->
+      <div class="page" id="page-marketing">
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-white mb-1">Marketing Performance</h2>
+          <p class="text-slate-400 text-sm">Your campaigns across all channels · Last 30 days</p>
+        </div>
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <div class="glass-card p-4 text-center">
+            <div class="text-xl font-bold text-white tabular-nums">$3,548</div>
+            <div class="text-xs text-slate-400 mt-1">Ad Spend</div>
+            <div class="text-xs text-amber-400 mt-0.5">↑ 8.3%</div>
+          </div>
+          <div class="glass-card p-4 text-center">
+            <div class="text-xl font-bold text-white tabular-nums">187K</div>
+            <div class="text-xs text-slate-400 mt-1">Impressions</div>
+            <div class="text-xs text-emerald-400 mt-0.5">↑ 12.1%</div>
+          </div>
+          <div class="glass-card p-4 text-center">
+            <div class="text-xl font-bold text-white tabular-nums">4,821</div>
+            <div class="text-xs text-slate-400 mt-1">Clicks</div>
+            <div class="text-xs text-emerald-400 mt-0.5">↑ 15.7%</div>
+          </div>
+          <div class="glass-card p-4 text-center">
+            <div class="text-xl font-bold text-white tabular-nums">127</div>
+            <div class="text-xs text-slate-400 mt-1">Conversions</div>
+            <div class="text-xs text-emerald-400 mt-0.5">↑ 14.2%</div>
+          </div>
+          <div class="glass-card p-4 text-center">
+            <div class="text-2xl font-bold text-emerald-400 tabular-nums">3.2x</div>
+            <div class="text-xs text-slate-400 mt-1">Return on Spend</div>
+            <div class="text-xs text-emerald-400 mt-0.5">↑ 5.7%</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <!-- Spend chart -->
+          <div class="glass-card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-white text-sm">Daily Spend & Conversions</h3>
+              <span class="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded-lg">30 days</span>
+            </div>
+            <div class="chart-wrapper"><canvas id="spendChart"></canvas></div>
+          </div>
+          <!-- Channel mix -->
+          <div class="glass-card p-6">
+            <h3 class="font-semibold text-white text-sm mb-4">Traffic Channel Mix</h3>
+            <div class="chart-wrapper"><canvas id="channelChart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Campaigns table -->
+        <div class="glass-card p-6">
+          <h3 class="font-semibold text-white mb-4">Campaign Breakdown</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-xs text-slate-500 border-b border-slate-700/50">
+                  <th class="text-left pb-3 font-medium">Campaign</th>
+                  <th class="text-right pb-3 font-medium">Spend</th>
+                  <th class="text-right pb-3 font-medium">Clicks</th>
+                  <th class="text-right pb-3 font-medium">Conversions</th>
+                  <th class="text-right pb-3 font-medium">ROAS</th>
+                  <th class="text-center pb-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-700/30">
+                <tr class="hover:bg-slate-800/30 transition-colors">
+                  <td class="py-3 font-medium text-slate-200">Lead Gen — Wellness Package Q3</td>
+                  <td class="py-3 text-right text-slate-300 tabular-nums">$1,847</td>
+                  <td class="py-3 text-right text-slate-300 tabular-nums">2,541</td>
+                  <td class="py-3 text-right text-slate-300 tabular-nums">67</td>
+                  <td class="py-3 text-right font-semibold text-emerald-400 tabular-nums">3.8x</td>
+                  <td class="py-3 text-center"><span class="badge-active text-xs px-2 py-0.5 rounded-full">Active</span></td>
+                </tr>
+                <tr class="hover:bg-slate-800/30 transition-colors">
+                  <td class="py-3 font-medium text-slate-200">Brand Awareness — Summer</td>
+                  <td class="py-3 text-right text-slate-300 tabular-nums">$1,200</td>
+                  <td class="py-3 text-right text-slate-300 tabular-nums">1,680</td>
+                  <td class="py-3 text-right text-slate-300 tabular-nums">42</td>
+                  <td class="py-3 text-right font-semibold text-blue-400 tabular-nums">2.8x</td>
+                  <td class="py-3 text-center"><span class="badge-active text-xs px-2 py-0.5 rounded-full">Active</span></td>
+                </tr>
+                <tr class="hover:bg-slate-800/30 transition-colors">
+                  <td class="py-3 font-medium text-slate-200">Retargeting — Free Consultation</td>
+                  <td class="py-3 text-right text-slate-300 tabular-nums">$500</td>
+                  <td class="py-3 text-right text-slate-300 tabular-nums">600</td>
+                  <td class="py-3 text-right text-slate-300 tabular-nums">18</td>
+                  <td class="py-3 text-right font-semibold text-emerald-400 tabular-nums">4.1x</td>
+                  <td class="py-3 text-center"><span class="badge-active text-xs px-2 py-0.5 rounded-full">Active</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== SEO PAGE ==================== -->
+      <div class="page" id="page-seo">
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-white mb-1">SEO & Organic Growth</h2>
+          <p class="text-slate-400 text-sm">How Google finds and ranks your website · Last 30 days</p>
+        </div>
+
+        <div class="glass-card mb-4 p-3 rounded-xl border border-blue-500/20 bg-blue-500/5">
+          <p class="text-xs text-blue-300">ℹ️ Search Console data has a 3-4 day lag — this is normal and reflects how Google processes data.</p>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="glass-card p-5">
+            <div class="text-2xl font-bold text-white tabular-nums">4,821</div>
+            <div class="text-sm text-slate-400 mt-1">Organic Clicks</div>
+            <div class="text-xs text-emerald-400 mt-0.5">↑ 18.4% vs last month</div>
+          </div>
+          <div class="glass-card p-5">
+            <div class="text-2xl font-bold text-white tabular-nums">187K</div>
+            <div class="text-sm text-slate-400 mt-1">Times in Search Results</div>
+            <div class="text-xs text-emerald-400 mt-0.5">↑ 22.1% vs last month</div>
+          </div>
+          <div class="glass-card p-5">
+            <div class="text-2xl font-bold text-white tabular-nums">2.57%</div>
+            <div class="text-sm text-slate-400 mt-1">Click-through Rate</div>
+            <div class="text-xs text-slate-500 mt-0.5">Industry avg: 2.1%</div>
+          </div>
+          <div class="glass-card p-5">
+            <div class="text-2xl font-bold text-white tabular-nums">#14.3</div>
+            <div class="text-sm text-slate-400 mt-1">Avg Google Ranking</div>
+            <div class="text-xs text-emerald-400 mt-0.5">↑ 1.8 positions improved</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="glass-card p-6">
+            <h3 class="font-semibold text-white text-sm mb-4">Organic Traffic Trend</h3>
+            <div class="chart-wrapper"><canvas id="seoChart"></canvas></div>
+          </div>
+          <div class="glass-card p-6">
+            <h3 class="font-semibold text-white text-sm mb-4">Top Ranking Keywords</h3>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between py-2 border-b border-slate-700/30">
+                <div>
+                  <div class="text-sm text-slate-200">wellness coaching near me</div>
+                  <div class="text-xs text-slate-500">412 clicks · 4,820 shown</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-white">#3.2</div>
+                  <div class="text-xs text-emerald-400">↑ 1 position</div>
+                </div>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-slate-700/30">
+                <div>
+                  <div class="text-sm text-slate-200">holistic health coach</div>
+                  <div class="text-xs text-slate-500">287 clicks · 6,100 shown</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-white">#6.8</div>
+                  <div class="text-xs text-red-400">↓ 2 positions</div>
+                </div>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-slate-700/30">
+                <div>
+                  <div class="text-sm text-slate-200">online wellness program</div>
+                  <div class="text-xs text-slate-500">198 clicks · 3,200 shown</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-white">#8.1</div>
+                  <div class="text-xs text-emerald-400">↑ 3 positions</div>
+                </div>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-slate-700/30">
+                <div>
+                  <div class="text-sm text-slate-200">stress management coaching</div>
+                  <div class="text-xs text-slate-500">128 clicks · 2,100 shown</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-white">#4.9</div>
+                  <div class="text-xs text-emerald-400">↑ 2 positions</div>
+                </div>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <div>
+                  <div class="text-sm text-slate-200">nutrition coaching program</div>
+                  <div class="text-xs text-slate-500">98 clicks · 1,900 shown</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-white">#7.3</div>
+                  <div class="text-xs text-emerald-400">↑ 4 positions</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== AUTOMATION PAGE ==================== -->
+      <div class="page" id="page-automation">
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-white mb-1">AI Automation</h2>
+          <p class="text-slate-400 text-sm">How AI is saving your team time this month</p>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="glass-card p-5 text-center">
+            <div class="text-3xl font-bold text-violet-400 tabular-nums mb-1">47</div>
+            <div class="text-sm text-slate-300 font-medium">Hours Saved</div>
+            <div class="text-xs text-slate-500 mt-0.5">This month</div>
+          </div>
+          <div class="glass-card p-5 text-center">
+            <div class="text-3xl font-bold text-blue-400 tabular-nums mb-1">5</div>
+            <div class="text-sm text-slate-300 font-medium">Active Workflows</div>
+            <div class="text-xs text-slate-500 mt-0.5">All running smoothly</div>
+          </div>
+          <div class="glass-card p-5 text-center">
+            <div class="text-3xl font-bold text-emerald-400 tabular-nums mb-1">312</div>
+            <div class="text-sm text-slate-300 font-medium">Tasks Completed</div>
+            <div class="text-xs text-slate-500 mt-0.5">Automatically this month</div>
+          </div>
+          <div class="glass-card p-5 text-center">
+            <div class="text-3xl font-bold text-white tabular-nums mb-1">96%</div>
+            <div class="text-sm text-slate-300 font-medium">Success Rate</div>
+            <div class="text-xs text-emerald-400 mt-0.5">1 error this month</div>
+          </div>
+        </div>
+
+        <div class="glass-card p-6 mb-6">
+          <h3 class="font-semibold text-white mb-4">Your Active Automations</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700/40">
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                <div>
+                  <div class="text-sm font-medium text-white">New leads automatically added to CRM</div>
+                  <div class="text-xs text-slate-400">When someone fills your form → contact created in HubSpot + email sequence starts</div>
+                </div>
+              </div>
+              <div class="text-right flex-shrink-0 ml-4">
+                <div class="text-sm font-semibold text-white">12 min saved</div>
+                <div class="text-xs text-slate-500">per lead</div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700/40">
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                <div>
+                  <div class="text-sm font-medium text-white">Monthly invoices sent automatically</div>
+                  <div class="text-xs text-slate-400">Invoices generated and emailed to clients on the 1st of each month</div>
+                </div>
+              </div>
+              <div class="text-right flex-shrink-0 ml-4">
+                <div class="text-sm font-semibold text-white">45 min saved</div>
+                <div class="text-xs text-slate-500">per month</div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700/40">
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                <div>
+                  <div class="text-sm font-medium text-white">Social media posts scheduled automatically</div>
+                  <div class="text-xs text-slate-400">Approved content posted to Instagram & Facebook on schedule</div>
+                </div>
+              </div>
+              <div class="text-right flex-shrink-0 ml-4">
+                <div class="text-sm font-semibold text-white">28 min saved</div>
+                <div class="text-xs text-slate-500">per post</div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700/40">
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                <div>
+                  <div class="text-sm font-medium text-white">Lead profiles enriched automatically</div>
+                  <div class="text-xs text-slate-400">New leads researched and tagged with industry, company size, interests</div>
+                </div>
+              </div>
+              <div class="text-right flex-shrink-0 ml-4">
+                <div class="text-sm font-semibold text-white">15 min saved</div>
+                <div class="text-xs text-slate-500">per lead</div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700/40">
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                <div>
+                  <div class="text-sm font-medium text-white">Weekly performance reports distributed</div>
+                  <div class="text-xs text-slate-400">Reports sent to your team every Monday morning automatically</div>
+                </div>
+              </div>
+              <div class="text-right flex-shrink-0 ml-4">
+                <div class="text-sm font-semibold text-white">30 min saved</div>
+                <div class="text-xs text-slate-500">per week</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== PROJECTS PAGE ==================== -->
+      <div class="page" id="page-projects">
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-white mb-1">Projects</h2>
+          <p class="text-slate-400 text-sm">All work being done for your business</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div class="glass-card p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <span class="badge-active text-xs px-2.5 py-1 rounded-full font-medium">On Track</span>
+                <h3 class="text-base font-semibold text-white mt-2">Q3 Lead Generation Campaign</h3>
+                <p class="text-sm text-slate-400 mt-1">Facebook & Instagram campaigns targeting wellness clients in target markets.</p>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="flex justify-between text-xs text-slate-400 mb-1.5">
+                <span>Progress</span><span class="font-semibold text-white">65%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill bg-gradient-to-r from-blue-500 to-indigo-500" style="width:65%"></div></div>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-slate-500">
+              <span>Started: Jun 5, 2026</span>
+              <span>·</span>
+              <span>Due: Aug 2, 2026</span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-400">
+              Next milestone: <span class="text-amber-400 font-medium">Campaign Launch</span> in 5 days
+            </div>
+          </div>
+
+          <div class="glass-card p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <span class="badge-active text-xs px-2.5 py-1 rounded-full font-medium">On Track</span>
+                <h3 class="text-base font-semibold text-white mt-2">Website SEO Overhaul</h3>
+                <p class="text-sm text-slate-400 mt-1">Technical SEO improvements, content optimization, and backlink strategy.</p>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="flex justify-between text-xs text-slate-400 mb-1.5">
+                <span>Progress</span><span class="font-semibold text-white">40%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill bg-gradient-to-r from-emerald-500 to-teal-500" style="width:40%"></div></div>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-slate-500">
+              <span>Started: Jun 2, 2026</span>
+              <span>·</span>
+              <span>Due: Sep 1, 2026</span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-400">
+              Completed: Technical audit ✓ · Next: On-page optimization
+            </div>
+          </div>
+
+          <div class="glass-card p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <span class="badge-risk text-xs px-2.5 py-1 rounded-full font-medium">Awaiting Approval</span>
+                <h3 class="text-base font-semibold text-white mt-2">Email Marketing Automation</h3>
+                <p class="text-sm text-slate-400 mt-1">Welcome sequence, lead nurture, and re-engagement email flows.</p>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="flex justify-between text-xs text-slate-400 mb-1.5">
+                <span>Progress</span><span class="font-semibold text-white">80%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill bg-gradient-to-r from-violet-500 to-purple-500" style="width:80%"></div></div>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-slate-500">
+              <span>Started: May 2, 2026</span>
+              <span>·</span>
+              <span>Due: Jul 17, 2026</span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-slate-700/50">
+              <button onclick="showPage('approvals')" class="text-xs text-amber-400 font-medium hover:text-amber-300">
+                ⚡ Review email sequence for approval →
+              </button>
+            </div>
+          </div>
+
+          <div class="glass-card p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <span class="badge-active text-xs px-2.5 py-1 rounded-full font-medium">On Track</span>
+                <h3 class="text-base font-semibold text-white mt-2">Brand Content Calendar</h3>
+                <p class="text-sm text-slate-400 mt-1">Monthly content for blog, social media, and email newsletters.</p>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="flex justify-between text-xs text-slate-400 mb-1.5">
+                <span>Progress</span><span class="font-semibold text-white">55%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill bg-gradient-to-r from-amber-500 to-orange-500" style="width:55%"></div></div>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-slate-500">
+              <span>Started: Jun 12, 2026</span>
+              <span>·</span>
+              <span>Due: Aug 12, 2026</span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-400">
+              August content now in production
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== APPROVALS PAGE ==================== -->
+      <div class="page" id="page-approvals">
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-white mb-1">Approvals</h2>
+          <p class="text-slate-400 text-sm">Review and approve work from the LitLabs team</p>
+        </div>
+
+        <!-- Pending banner -->
+        <div class="glass-card mb-6 p-4 border border-amber-500/20 bg-amber-500/5 rounded-2xl">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+            <p class="text-sm text-amber-300 font-medium">2 items are waiting for your decision. Approvals keep the team moving forward!</p>
+          </div>
+        </div>
+
+        <div class="space-y-4 mb-8" id="pending-approvals">
+          <!-- Approval 1 -->
+          <div class="approval-card p-6" id="approval-1">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="badge-pending text-xs px-2 py-0.5 rounded-full">Ad Creatives</span>
+                    <span class="text-xs text-amber-400 font-medium">⏰ Due in 3 days</span>
+                  </div>
+                  <h3 class="text-base font-semibold text-white">Social Media Ad Creatives — Set A</h3>
+                  <p class="text-sm text-slate-400 mt-1">6 ad variations for Facebook and Instagram (static + video formats). Campaign launches in 5 days — your approval keeps us on schedule.</p>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <button onclick="approveItem('approval-1', 'Ad Creatives — Set A')" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/30 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Approve
+              </button>
+              <button onclick="toggleComments('comment-1')" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700/50 border border-slate-600/50 text-slate-300 text-sm font-medium hover:bg-slate-700 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                Request Changes
+              </button>
+            </div>
+            <div class="mt-3 hidden" id="comment-1">
+              <textarea class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 resize-none" rows="2" placeholder="Describe what changes you'd like..."></textarea>
+              <div class="flex gap-2 mt-2">
+                <button onclick="requestChanges('approval-1')" class="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold hover:bg-amber-500/30">Submit Feedback</button>
+                <button onclick="toggleComments('comment-1')" class="px-3 py-1.5 rounded-lg text-slate-500 text-xs hover:text-slate-300">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Approval 2 -->
+          <div class="approval-card p-6" id="approval-2">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 border border-violet-500/30 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="badge-pending text-xs px-2 py-0.5 rounded-full">Email Copy</span>
+                    <span class="text-xs text-amber-400 font-medium">⏰ Due in 3 days</span>
+                  </div>
+                  <h3 class="text-base font-semibold text-white">Email Welcome Sequence (5 emails)</h3>
+                  <p class="text-sm text-slate-400 mt-1">Complete 5-email welcome series for new subscribers with subject lines, copy, and send schedule. Ready to activate once approved.</p>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <button onclick="approveItem('approval-2', 'Email Welcome Sequence')" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/30 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Approve
+              </button>
+              <button onclick="toggleComments('comment-2')" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700/50 border border-slate-600/50 text-slate-300 text-sm font-medium hover:bg-slate-700 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                Request Changes
+              </button>
+            </div>
+            <div class="mt-3 hidden" id="comment-2">
+              <textarea class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 resize-none" rows="2" placeholder="Describe what changes you'd like..."></textarea>
+              <div class="flex gap-2 mt-2">
+                <button onclick="requestChanges('approval-2')" class="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold hover:bg-amber-500/30">Submit Feedback</button>
+                <button onclick="toggleComments('comment-2')" class="px-3 py-1.5 rounded-lg text-slate-500 text-xs hover:text-slate-300">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- History -->
+        <div class="glass-card p-6">
+          <h3 class="font-semibold text-white mb-4">Approval History</h3>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 py-2.5 border-b border-slate-700/30">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm text-slate-200">Q3 Campaign Strategy Document — <span class="text-emerald-400">Approved</span></p>
+                <p class="text-xs text-slate-500">5 days ago</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 py-2.5">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm text-slate-200">SEO Audit Report — July 2025 — <span class="text-emerald-400">Approved</span></p>
+                <p class="text-xs text-slate-500">8 days ago</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== DELIVERABLES PAGE ==================== -->
+      <div class="page" id="page-deliverables">
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-white mb-1">Deliverables</h2>
+          <p class="text-slate-400 text-sm">All files, reports, and assets produced for your business</p>
+        </div>
+        <div class="glass-card p-6">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-xs text-slate-500 border-b border-slate-700/50">
+                  <th class="text-left pb-3 font-medium">Name</th>
+                  <th class="text-left pb-3 font-medium">Type</th>
+                  <th class="text-left pb-3 font-medium">Project</th>
+                  <th class="text-left pb-3 font-medium">Date</th>
+                  <th class="text-center pb-3 font-medium">Status</th>
+                  <th class="text-right pb-3 font-medium">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-700/30">
+                <tr class="hover:bg-slate-800/30 transition-colors">
+                  <td class="py-3 font-medium text-slate-200">Q3 Campaign Strategy Document</td>
+                  <td class="py-3 text-slate-400">PDF</td>
+                  <td class="py-3 text-slate-400">Lead Gen Campaign</td>
+                  <td class="py-3 text-slate-400">Jun 20, 2026</td>
+                  <td class="py-3 text-center"><span class="badge-active text-xs px-2 py-0.5 rounded-full">Approved</span></td>
+                  <td class="py-3 text-right"><button class="text-blue-400 hover:text-blue-300 text-xs font-medium">Download</button></td>
+                </tr>
+                <tr class="hover:bg-slate-800/30 transition-colors">
+                  <td class="py-3 font-medium text-slate-200">Social Media Ad Creatives — Set A</td>
+                  <td class="py-3 text-slate-400">Images</td>
+                  <td class="py-3 text-slate-400">Lead Gen Campaign</td>
+                  <td class="py-3 text-slate-400">Jun 29, 2026</td>
+                  <td class="py-3 text-center"><span class="badge-pending text-xs px-2 py-0.5 rounded-full">Needs Review</span></td>
+                  <td class="py-3 text-right"><button onclick="showPage('approvals')" class="text-amber-400 hover:text-amber-300 text-xs font-medium">Review →</button></td>
+                </tr>
+                <tr class="hover:bg-slate-800/30 transition-colors">
+                  <td class="py-3 font-medium text-slate-200">SEO Audit Report — July 2025</td>
+                  <td class="py-3 text-slate-400">PDF</td>
+                  <td class="py-3 text-slate-400">SEO Overhaul</td>
+                  <td class="py-3 text-slate-400">Jun 24, 2026</td>
+                  <td class="py-3 text-center"><span class="badge-active text-xs px-2 py-0.5 rounded-full">Approved</span></td>
+                  <td class="py-3 text-right"><button class="text-blue-400 hover:text-blue-300 text-xs font-medium">Download</button></td>
+                </tr>
+                <tr class="hover:bg-slate-800/30 transition-colors">
+                  <td class="py-3 font-medium text-slate-200">Email Welcome Sequence (5 emails)</td>
+                  <td class="py-3 text-slate-400">Document</td>
+                  <td class="py-3 text-slate-400">Email Automation</td>
+                  <td class="py-3 text-slate-400">Jul 1, 2026</td>
+                  <td class="py-3 text-center"><span class="badge-pending text-xs px-2 py-0.5 rounded-full">Needs Review</span></td>
+                  <td class="py-3 text-right"><button onclick="showPage('approvals')" class="text-amber-400 hover:text-amber-300 text-xs font-medium">Review →</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== REPORTS PAGE ==================== -->
+      <div class="page" id="page-reports">
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-white mb-1">Reports</h2>
+          <p class="text-slate-400 text-sm">Performance summaries generated for your business</p>
+        </div>
+        <div class="grid grid-cols-1 gap-4">
+          <div class="glass-card p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center"><svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+              <div>
+                <div class="text-sm font-semibold text-white">Monthly Performance Report — July 2026</div>
+                <div class="text-xs text-slate-400">Marketing, SEO, Automations, Projects</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-slate-500">Generated Jul 2, 2026</span>
+              <button class="px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-semibold hover:bg-blue-500/30 transition-all">Download PDF</button>
+            </div>
+          </div>
+          <div class="glass-card p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center"><svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+              <div>
+                <div class="text-sm font-semibold text-white">Weekly Performance Report — Week 26</div>
+                <div class="text-xs text-slate-400">Campaign highlights and quick wins</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-slate-500">Generated Jun 30, 2026</span>
+              <button class="px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-semibold hover:bg-blue-500/30 transition-all">Download PDF</button>
+            </div>
+          </div>
+          <div class="glass-card p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center"><svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+              <div>
+                <div class="text-sm font-semibold text-white">Monthly Performance Report — June 2026</div>
+                <div class="text-xs text-slate-400">Marketing, SEO, Automations, Projects</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-slate-500">Generated Jun 2, 2026</span>
+              <button class="px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-semibold hover:bg-blue-500/30 transition-all">Download PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page content -->
+  </main>
+</div>
+
+<script>
+// ========================
+// Navigation
+// ========================
+const pageTitles = {
+  overview: "Dashboard Overview",
+  marketing: "Marketing Performance",
+  seo: "SEO & Organic Growth",
+  automation: "AI Automation",
+  projects: "Projects",
+  approvals: "Approvals",
+  deliverables: "Deliverables",
+  reports: "Reports",
+};
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-' + name);
+  const nav = document.getElementById('nav-' + name);
+  if (page) page.classList.add('active');
+  if (nav) nav.classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[name] || name;
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('mobileOverlay').classList.remove('open');
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('mobileOverlay').classList.toggle('open');
+}
+
+// ========================
+// Approval interactions
+// ========================
+let approvalCount = 2;
+
+function approveItem(cardId, name) {
+  const card = document.getElementById(cardId);
+  card.style.opacity = '0';
+  card.style.transform = 'translateX(20px)';
+  card.style.transition = 'all 0.4s ease';
+  setTimeout(() => {
+    card.remove();
+    approvalCount = Math.max(0, approvalCount - 1);
+    updateApprovalBadge();
+    showToast(`✅ ${name} approved! LitLabs team notified.`, 'success');
+  }, 400);
+}
+
+function requestChanges(cardId) {
+  const card = document.getElementById(cardId);
+  const textarea = card.querySelector('textarea');
+  if (!textarea.value.trim()) {
+    textarea.style.borderColor = '#EF4444';
+    setTimeout(() => textarea.style.borderColor = '#475569', 1500);
+    return;
+  }
+  card.style.opacity = '0';
+  card.style.transition = 'opacity 0.3s';
+  setTimeout(() => {
+    card.remove();
+    approvalCount = Math.max(0, approvalCount - 1);
+    updateApprovalBadge();
+    showToast(`💬 Feedback submitted! The team will revise and resubmit.`, 'info');
+  }, 300);
+}
+
+function toggleComments(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('hidden');
+}
+
+function updateApprovalBadge() {
+  const badge = document.getElementById('approvals-badge');
+  if (approvalCount > 0) {
+    badge.textContent = approvalCount;
+    badge.style.display = 'inline';
+  } else {
+    badge.style.display = 'none';
+    // Show empty state
+    const container = document.getElementById('pending-approvals');
+    if (container && !container.children.length) {
+      container.innerHTML = `<div class="glass-card p-12 text-center">
+        <div class="text-4xl mb-3">🎉</div>
+        <h3 class="text-lg font-semibold text-white mb-1">All caught up!</h3>
+        <p class="text-slate-400 text-sm">No pending approvals. Great work staying on top of things!</p>
+      </div>`;
+    }
+  }
+}
+
+// ========================
+// Toast notifications
+// ========================
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  const colors = { success: 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300', info: 'bg-blue-500/20 border-blue-500/40 text-blue-300' };
+  toast.className = `fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl border text-sm font-medium shadow-xl backdrop-blur ${colors[type] || colors.success}`;
+  toast.style.cssText = 'animation: fadeInUp 0.3s ease; max-width: 320px;';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 4000);
+}
+
+// ========================
+// Charts (Chart.js)
+// ========================
+const commonOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+};
+
+// Generate dates
+function genDates(n = 30) {
+  return Array.from({length: n}, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (n - i));
+    return d.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
+  });
+}
+
+// Generate data with trend
+function genData(n = 30, base = 100, variance = 0.3, trend = 0.005) {
+  return Array.from({length: n}, (_, i) => {
+    const weekend = (new Date().getDay() + i) % 7 >= 5 ? 0.65 : 1;
+    return Math.max(0, base * weekend * (1 + trend * i) * (1 + (Math.random() - 0.5) * variance));
+  });
+}
+
+// Spend Chart
+const spendCtx = document.getElementById('spendChart')?.getContext('2d');
+if (spendCtx) {
+  new Chart(spendCtx, {
+    type: 'line',
+    data: {
+      labels: genDates(30),
+      datasets: [
+        {
+          label: 'Spend ($)',
+          data: genData(30, 118, 0.3, 0.004),
+          borderColor: '#3B82F6',
+          backgroundColor: 'rgba(59,130,246,0.08)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 0,
+        },
+        {
+          label: 'Conversions',
+          data: genData(30, 4.2, 0.4, 0.007),
+          borderColor: '#10B981',
+          backgroundColor: 'rgba(16,185,129,0.08)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.4,
+          pointRadius: 0,
+          yAxisID: 'y1',
+        }
+      ]
+    },
+    options: {
+      ...commonOptions,
+      scales: {
+        x: { grid: { color: 'rgba(51,65,85,0.3)' }, ticks: { color: '#64748B', maxTicksLimit: 6, font: {size: 10} } },
+        y: { grid: { color: 'rgba(51,65,85,0.3)' }, ticks: { color: '#64748B', font: {size: 10} }, position: 'left' },
+        y1: { ticks: { color: '#10B981', font: {size: 10} }, position: 'right', grid: { drawOnChartArea: false } }
+      },
+      plugins: { legend: { display: true, labels: { color: '#94A3B8', font: {size: 11} } } }
+    }
+  });
+}
+
+// Channel Chart
+const channelCtx = document.getElementById('channelChart')?.getContext('2d');
+if (channelCtx) {
+  new Chart(channelCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Organic Search', 'Paid Social', 'Direct', 'Email', 'Referral'],
+      datasets: [{
+        data: [38.4, 24.9, 21.5, 9.9, 5.2],
+        backgroundColor: ['#10B981', '#3B82F6', '#6366F1', '#F59E0B', '#94A3B8'],
+        borderWidth: 0,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: { position: 'right', labels: { color: '#94A3B8', padding: 12, font: {size: 11} } }
+      }
+    }
+  });
+}
+
+// SEO Chart
+const seoCtx = document.getElementById('seoChart')?.getContext('2d');
+if (seoCtx) {
+  new Chart(seoCtx, {
+    type: 'line',
+    data: {
+      labels: genDates(30),
+      datasets: [{
+        data: genData(30, 160, 0.25, 0.006),
+        borderColor: '#10B981',
+        backgroundColor: 'rgba(16,185,129,0.08)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+      }]
+    },
+    options: {
+      ...commonOptions,
+      scales: {
+        x: { grid: { color: 'rgba(51,65,85,0.3)' }, ticks: { color: '#64748B', maxTicksLimit: 6, font: {size: 10} } },
+        y: { grid: { color: 'rgba(51,65,85,0.3)' }, ticks: { color: '#64748B', font: {size: 10} } },
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
