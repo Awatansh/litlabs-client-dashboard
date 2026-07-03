@@ -47,7 +47,10 @@ class StorageService:
             resp = client.post(url, headers=self.headers, json={"expiresIn": 600}, timeout=30)
             resp.raise_for_status()
             signed_url = resp.json().get("signedURL", "")
-            upload_url = f"{self.base_url}{signed_url}" if signed_url.startswith("/") else signed_url
+            if signed_url.startswith("/"):
+                upload_url = f"{self.base_url}/storage/v1{signed_url}"
+            else:
+                upload_url = signed_url
         return {"upload_url": upload_url, "object_key": object_key}
 
     def generate_download_url(self, object_key: str) -> str:
@@ -62,7 +65,11 @@ class StorageService:
             )
             resp.raise_for_status()
             signed_url = resp.json().get("signedURL", "")
-            return f"{self.base_url}{signed_url}" if signed_url.startswith("/") else signed_url
+            # Supabase returns a relative path like /object/sign/...
+            # The full URL must be base_url + /storage/v1 + signed_url
+            if signed_url.startswith("/"):
+                return f"{self.base_url}/storage/v1{signed_url}"
+            return signed_url
 
     def upload_pdf_bytes(self, client_id: str, filename: str, pdf_bytes: bytes) -> str:
         """Upload PDF bytes directly to Supabase Storage and return the object key.
@@ -102,7 +109,11 @@ class StorageService:
             )
             resp.raise_for_status()
             signed_url = resp.json().get("signedURL", "")
-            return f"{self.base_url}{signed_url}" if signed_url.startswith("/") else signed_url
+            # Supabase returns a relative path like /object/sign/...
+            # The full URL must be base_url + /storage/v1 + signed_url
+            if signed_url.startswith("/"):
+                return f"{self.base_url}/storage/v1{signed_url}"
+            return signed_url
 
     async def async_upload_pdf_bytes(self, client_id: str, filename: str, pdf_bytes: bytes) -> str:
         """Async version of upload_pdf_bytes for use in FastAPI routes."""
