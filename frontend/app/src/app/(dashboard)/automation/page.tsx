@@ -31,20 +31,20 @@ export default function AutomationPage() {
           title="Time Saved"
           value={`${summary?.time_saved_hours || 0} hrs`}
           icon={<Clock className="w-4 h-4" />}
-          iconColor="bg-blue-500/10 text-blue-400"
-          valueColor="text-white"
+          iconColor="bg-blue-100 text-blue-600"
+          valueColor="text-slate-900"
         />
         <MetricCard
           title="Tasks Completed"
           value={summary?.tasks_completed?.toLocaleString() || '0'}
           icon={<CheckCircle2 className="w-4 h-4" />}
-          iconColor="bg-emerald-500/10 text-emerald-400"
+          iconColor="bg-emerald-100 text-emerald-600"
         />
         <MetricCard
           title="Total Workflow Runs"
           value={summary?.total_runs?.toLocaleString() || '0'}
           icon={<PlayCircle className="w-4 h-4" />}
-          iconColor="bg-violet-500/10 text-violet-400"
+          iconColor="bg-violet-100 text-violet-600"
         />
         <MetricCard
           title="Active Workflows"
@@ -55,10 +55,10 @@ export default function AutomationPage() {
 
       <div className="glass-card p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="font-semibold text-white">Recent Automation Runs</h3>
+          <h3 className="font-semibold text-slate-900">Recent Automation Runs</h3>
           <div className="flex items-center gap-2 text-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-emerald-400 font-medium">Systems Operational</span>
+            <span className="text-emerald-600 font-medium">Systems Operational</span>
           </div>
         </div>
 
@@ -66,7 +66,7 @@ export default function AutomationPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-xs text-slate-500 border-b border-slate-700/50">
+                <tr className="text-xs text-slate-500 border-b border-slate-200">
                   <th className="text-left pb-3 font-medium">Workflow Name</th>
                   <th className="text-left pb-3 font-medium">Source</th>
                   <th className="text-center pb-3 font-medium">Tasks Executed</th>
@@ -75,21 +75,21 @@ export default function AutomationPage() {
                   <th className="text-center pb-3 font-medium">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/30">
+              <tbody className="divide-y divide-slate-200">
                 {recent?.map((log: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
-                  <tr key={log.id} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-3 font-medium text-slate-200">
+                  <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-3 font-medium text-slate-800">
                       <div className="flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-amber-400" />
+                        <Zap className="w-4 h-4 text-amber-500" />
                         {log.workflow_name}
                       </div>
                     </td>
-                    <td className="py-3 text-slate-400 capitalize">{log.workflow_source}</td>
-                    <td className="py-3 text-center text-slate-300 tabular-nums">{log.tasks_completed}</td>
-                    <td className="py-3 text-right text-emerald-400 font-medium tabular-nums">
+                    <td className="py-3 text-slate-500 capitalize">{log.workflow_source}</td>
+                    <td className="py-3 text-center text-slate-500 tabular-nums">{log.tasks_completed}</td>
+                    <td className="py-3 text-right text-emerald-600 font-medium tabular-nums">
                       +{log.time_saved_minutes} min
                     </td>
-                    <td className="py-3 text-right text-slate-400 tabular-nums">{timeAgo(log.timestamp)}</td>
+                    <td className="py-3 text-right text-slate-500 tabular-nums">{timeAgo(log.timestamp)}</td>
                     <td className="py-3 text-center">
                       <StatusBadge status={log.status === 'success' ? 'completed' : 'rejected'}>
                         {log.status}

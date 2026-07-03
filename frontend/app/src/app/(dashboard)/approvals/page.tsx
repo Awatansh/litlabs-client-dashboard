@@ -63,13 +63,13 @@ export default function ApprovalsPage() {
             className={cn(
               'pb-3 text-sm font-medium transition-colors border-b-2',
               activeTab === 'pending'
-                ? 'border-blue-500 text-blue-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
             )}
           >
             Requires Action
             {activeTab === 'pending' && approvals?.length > 0 && (
-              <span className="ml-2 bg-blue-500/20 text-blue-400 py-0.5 px-2 rounded-full text-xs">
+              <span className="ml-2 bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-xs">
                 {approvals.length}
               </span>
             )}
@@ -79,8 +79,8 @@ export default function ApprovalsPage() {
             className={cn(
               'pb-3 text-sm font-medium transition-colors border-b-2',
               activeTab === 'history'
-                ? 'border-blue-500 text-blue-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
             )}
           >
             History
@@ -100,21 +100,21 @@ export default function ApprovalsPage() {
                     Requested {timeAgo(approval.created_at)}
                   </span>
                 </div>
-                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-800 px-2 py-1 rounded-md">
+                <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider bg-slate-100 px-2 py-1 rounded-md">
                   {approval.type.replace('_', ' ')}
                 </div>
               </div>
 
-              <h3 className="text-lg font-bold text-white mb-2">{approval.title}</h3>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">{approval.title}</h3>
               
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-4">
-                <p className="text-sm text-slate-300 mb-3">{approval.description}</p>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
+                <p className="text-sm text-slate-700 mb-3">{approval.description}</p>
                 {approval.deliverable_url && (
                   <a
                     href={approval.deliverable_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors"
                   >
                     <LinkIcon className="w-4 h-4" />
                     View attached deliverable
@@ -123,11 +123,11 @@ export default function ApprovalsPage() {
               </div>
 
               {activeTab === 'pending' && (
-                <div className="flex gap-3 pt-3 border-t border-slate-700/50">
+                <div className="flex gap-3 pt-3 border-t border-slate-200">
                   <button
                     onClick={() => actionMutation.mutate({ id: approval.id, action: 'approve' })}
                     disabled={actionMutation.isPending}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-4 py-2 rounded-lg text-sm font-medium transition-all"
                   >
                     <Check className="w-4 h-4" />
                     Approve
@@ -138,7 +138,7 @@ export default function ApprovalsPage() {
                       if (comment) actionMutation.mutate({ id: approval.id, action: 'request-changes', comment });
                     }}
                     disabled={actionMutation.isPending}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-4 py-2 rounded-lg text-sm font-medium transition-all"
                   >
                     <AlertCircle className="w-4 h-4" />
                     Request Changes
@@ -149,7 +149,7 @@ export default function ApprovalsPage() {
                       if (comment) actionMutation.mutate({ id: approval.id, action: 'reject', comment });
                     }}
                     disabled={actionMutation.isPending}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium transition-all"
                   >
                     <X className="w-4 h-4" />
                     Reject
@@ -158,11 +158,11 @@ export default function ApprovalsPage() {
               )}
 
               {activeTab === 'history' && approval.reviewer_comments && (
-                <div className="flex items-start gap-2 mt-3 p-3 bg-slate-800/80 rounded-lg text-sm">
-                  <MessageSquare className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                <div className="flex items-start gap-2 mt-3 p-3 bg-slate-100 rounded-lg text-sm">
+                  <MessageSquare className="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="font-semibold text-slate-300 mr-2">Your comment:</span>
-                    <span className="text-slate-400">{approval.reviewer_comments}</span>
+                    <span className="font-semibold text-slate-900 mr-2">Your comment:</span>
+                    <span className="text-slate-700">{approval.reviewer_comments}</span>
                   </div>
                 </div>
               )}
@@ -170,9 +170,9 @@ export default function ApprovalsPage() {
           ))}
 
           {(!approvals || approvals.length === 0) && (
-            <div className="glass-card p-12 text-center text-slate-400">
-              <Check className="w-12 h-12 text-emerald-400/50 mx-auto mb-3" />
-              <p className="text-lg font-medium text-white mb-1">All caught up!</p>
+            <div className="glass-card p-12 text-center text-slate-500">
+              <Check className="w-12 h-12 text-emerald-400 mx-auto mb-3 opacity-50" />
+              <p className="text-lg font-medium text-slate-900 mb-1">All caught up!</p>
               <p>You have no pending approvals right now.</p>
             </div>
           )}
@@ -183,10 +183,10 @@ export default function ApprovalsPage() {
       <Toast.Root
         open={toastOpen}
         onOpenChange={setToastOpen}
-        className="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl shadow-black/50 grid grid-cols-[auto_max-content] items-center gap-x-4 data-[state=open]:animate-slideIn data-[state=closed]:animate-hide data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-[transform_200ms_ease-out] data-[swipe=end]:animate-swipeOut"
+        className="bg-white border border-slate-200 rounded-xl p-4 shadow-xl shadow-slate-200/50 grid grid-cols-[auto_max-content] items-center gap-x-4 data-[state=open]:animate-slideIn data-[state=closed]:animate-hide data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-[transform_200ms_ease-out] data-[swipe=end]:animate-swipeOut"
       >
-        <Toast.Title className="text-sm font-medium text-white flex items-center gap-2">
-          <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">✓</div>
+        <Toast.Title className="text-sm font-medium text-slate-900 flex items-center gap-2">
+          <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">✓</div>
           {toastMsg}
         </Toast.Title>
       </Toast.Root>

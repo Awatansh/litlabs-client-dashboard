@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen bg-slate-950 text-slate-50 antialiased">
+      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
         <QueryProvider>
           <AuthProvider>{children}</AuthProvider>
         </QueryProvider>

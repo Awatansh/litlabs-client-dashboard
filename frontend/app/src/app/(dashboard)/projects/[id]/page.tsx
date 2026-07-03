@@ -28,8 +28,8 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="glass-card p-10 text-center text-slate-400">
-        <p className="text-lg font-medium text-white mb-1">Project not found</p>
+      <div className="glass-card p-10 text-center text-slate-500">
+        <p className="text-lg font-medium text-slate-900 mb-1">Project not found</p>
         <p>The requested project is unavailable for this client.</p>
       </div>
     );
@@ -48,7 +48,7 @@ export default function ProjectDetailPage() {
             <StatusBadge status={project.status}>
               {project.status === 'active' ? 'On Track' : project.status}
             </StatusBadge>
-            <div className="text-sm text-slate-400">
+            <div className="text-sm text-slate-600">
               <div className="flex items-center gap-2 mb-2">
                 <CalendarDays className="w-4 h-4" />
                 <span>
@@ -61,9 +61,9 @@ export default function ProjectDetailPage() {
           </div>
 
           <div className="w-full max-w-sm">
-            <div className="flex justify-between text-xs text-slate-400 mb-2">
+            <div className="flex justify-between text-xs text-slate-500 mb-2">
               <span>Overall Progress</span>
-              <span className="font-semibold text-white">{project.progress}%</span>
+              <span className="font-semibold text-slate-900">{project.progress}%</span>
             </div>
             <ProgressBar value={project.progress} />
           </div>
@@ -71,7 +71,7 @@ export default function ProjectDetailPage() {
       </div>
 
       <div className="glass-card p-6">
-        <h3 className="text-lg font-semibold text-white mb-5">Milestones</h3>
+        <h3 className="text-lg font-semibold text-slate-900 mb-5">Milestones</h3>
 
         {project.milestones?.length ? (
           <div className="space-y-4">
@@ -81,17 +81,17 @@ export default function ProjectDetailPage() {
               return (
                 <div
                   key={milestone.id}
-                  className="flex items-start gap-4 rounded-2xl border border-slate-800 bg-slate-900/40 p-4"
+                  className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4"
                 >
-                  <div className={`mt-0.5 rounded-full p-2 ${isDone ? 'bg-emerald-500/15 text-emerald-400' : 'bg-blue-500/15 text-blue-400'}`}>
+                  <div className={`mt-0.5 rounded-full p-2 ${isDone ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
                     {isDone ? <CheckCircle2 className="w-4 h-4" /> : <Clock3 className="w-4 h-4" />}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                       <div>
-                        <p className="font-medium text-white">{milestone.title}</p>
-                        <p className="text-sm text-slate-400">
+                        <p className="font-medium text-slate-900">{milestone.title}</p>
+                        <p className="text-sm text-slate-600">
                           Due {new Date(milestone.due_date).toLocaleDateString()}
                         </p>
                       </div>
@@ -103,7 +103,7 @@ export default function ProjectDetailPage() {
             })}
           </div>
         ) : (
-          <p className="text-sm text-slate-400">No milestones are available for this project yet.</p>
+          <p className="text-sm text-slate-600">No milestones are available for this project yet.</p>
         )}
       </div>
     </div>

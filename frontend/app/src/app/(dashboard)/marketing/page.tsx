@@ -68,26 +68,26 @@ export default function MarketingPage() {
           value={meta_ads?.roas ? `${meta_ads.roas}x` : 'N/A'}
           change={vs_previous_period?.roas_change_pct}
           icon={<ArrowUpRight className="w-4 h-4" />}
-          iconColor="bg-emerald-500/10 text-emerald-400"
-          valueColor="text-emerald-400"
+          iconColor="bg-emerald-100 text-emerald-600"
+          valueColor="text-emerald-600"
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="glass-card p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-white text-sm">Daily Spend</h3>
-            <span className="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded-lg">30 days</span>
+            <h3 className="font-semibold text-slate-900 text-sm">Daily Spend</h3>
+            <span className="text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded-lg">30 days</span>
           </div>
           <div className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trends?.spend || []}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(51,65,85,0.3)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
                 <XAxis dataKey="date" stroke="#64748B" fontSize={10} tickFormatter={(val) => val.slice(5)} />
                 <YAxis stroke="#64748B" fontSize={10} tickFormatter={(val) => `$${val}`} />
                 <RechartsTooltip
-                  contentStyle={{ backgroundColor: '#1E293B', borderColor: '#334155', borderRadius: '8px' }}
-                  itemStyle={{ color: '#E2E8F0' }}
+                  contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', borderRadius: '8px' }}
+                  itemStyle={{ color: '#0F172A' }}
                 />
                 <Line type="monotone" dataKey="value" stroke="#3B82F6" strokeWidth={2} dot={false} name="Spend" />
               </LineChart>
@@ -96,7 +96,7 @@ export default function MarketingPage() {
         </div>
 
         <div className="glass-card p-6">
-          <h3 className="font-semibold text-white text-sm mb-4">Traffic Channel Mix</h3>
+          <h3 className="font-semibold text-slate-900 text-sm mb-4">Traffic Channel Mix</h3>
           <div className="h-[250px] w-full flex items-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -115,8 +115,8 @@ export default function MarketingPage() {
                   ))}
                 </Pie>
                 <RechartsTooltip
-                  contentStyle={{ backgroundColor: '#1E293B', borderColor: '#334155', borderRadius: '8px' }}
-                  itemStyle={{ color: '#E2E8F0' }}
+                  contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', borderRadius: '8px' }}
+                  itemStyle={{ color: '#0F172A' }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -124,8 +124,8 @@ export default function MarketingPage() {
               {channelData.map((ch: any /* eslint-disable-line @typescript-eslint/no-explicit-any */, i: number) => (
                 <div key={ch.channel} className="flex items-center gap-2 text-xs">
                   <span className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                  <span className="text-slate-300">{ch.channel}</span>
-                  <span className="text-slate-500 ml-auto">{ch.pct}%</span>
+                  <span className="text-slate-600">{ch.channel}</span>
+                  <span className="text-slate-400 ml-auto">{ch.pct}%</span>
                 </div>
               ))}
             </div>
@@ -134,11 +134,11 @@ export default function MarketingPage() {
       </div>
 
       <div className="glass-card p-6">
-        <h3 className="font-semibold text-white mb-4">Campaign Breakdown</h3>
+        <h3 className="font-semibold text-slate-900 mb-4">Campaign Breakdown</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-xs text-slate-500 border-b border-slate-700/50">
+              <tr className="text-xs text-slate-500 border-b border-slate-200">
                 <th className="text-left pb-3 font-medium">Campaign</th>
                 <th className="text-right pb-3 font-medium">Spend</th>
                 <th className="text-right pb-3 font-medium">Clicks</th>
@@ -147,14 +147,14 @@ export default function MarketingPage() {
                 <th className="text-center pb-3 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/30">
+            <tbody className="divide-y divide-slate-200">
               {campaigns?.map((c: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
-                <tr key={c.id} className="hover:bg-slate-800/30 transition-colors">
-                  <td className="py-3 font-medium text-slate-200">{c.name}</td>
-                  <td className="py-3 text-right text-slate-300 tabular-nums">{formatCurrency(c.spend)}</td>
-                  <td className="py-3 text-right text-slate-300 tabular-nums">{formatNumber(c.clicks)}</td>
-                  <td className="py-3 text-right text-slate-300 tabular-nums">{formatNumber(c.conversions)}</td>
-                  <td className="py-3 text-right font-semibold text-emerald-400 tabular-nums">{c.roas}x</td>
+                <tr key={c.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="py-3 font-medium text-slate-800">{c.name}</td>
+                  <td className="py-3 text-right text-slate-600 tabular-nums">{formatCurrency(c.spend)}</td>
+                  <td className="py-3 text-right text-slate-600 tabular-nums">{formatNumber(c.clicks)}</td>
+                  <td className="py-3 text-right text-slate-600 tabular-nums">{formatNumber(c.conversions)}</td>
+                  <td className="py-3 text-right font-semibold text-emerald-600 tabular-nums">{c.roas}x</td>
                   <td className="py-3 text-center">
                     <StatusBadge status={c.status.toLowerCase()}>{c.status}</StatusBadge>
                   </td>

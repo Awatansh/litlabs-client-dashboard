@@ -62,24 +62,24 @@ export default function ReportsPage() {
         {reports?.length > 0 ? (
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-slate-800/50 text-xs text-slate-400 border-b border-slate-700/50">
+              <tr className="bg-slate-50 text-xs text-slate-500 border-b border-slate-200">
                 <th className="text-left p-4 font-medium">Report Name</th>
                 <th className="text-left p-4 font-medium">Type</th>
                 <th className="text-left p-4 font-medium">Date Generated</th>
                 <th className="text-right p-4 font-medium">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/30">
+            <tbody className="divide-y divide-slate-200">
               {reports.map((report: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
-                <tr key={report.id} className="hover:bg-slate-800/30 transition-colors">
-                  <td className="p-4 text-slate-200 font-medium">
+                <tr key={report.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 text-slate-800 font-medium">
                     <div className="flex items-center gap-3">
-                      <BarChart3 className="w-4 h-4 text-blue-400" />
+                      <BarChart3 className="w-4 h-4 text-blue-600" />
                       {report.name}
                     </div>
                   </td>
-                  <td className="p-4 text-slate-400 uppercase text-xs font-semibold">{report.type}</td>
-                  <td className="p-4 text-slate-400">
+                  <td className="p-4 text-slate-600 uppercase text-xs font-semibold">{report.type}</td>
+                  <td className="p-4 text-slate-600">
                     <div className="flex items-center gap-1.5">
                       <CalendarDays className="w-3.5 h-3.5" />
                       {timeAgo(report.created_at)}
@@ -90,7 +90,7 @@ export default function ReportsPage() {
                       href={report.download_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-block text-blue-400 hover:text-blue-300 font-medium text-xs bg-blue-500/10 px-3 py-1.5 rounded-lg transition-colors"
+                      className="inline-block text-blue-700 hover:text-blue-800 font-medium text-xs bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
                     >
                       Download PDF
                     </a>
@@ -101,7 +101,7 @@ export default function ReportsPage() {
           </table>
         ) : (
           <EmptyState
-            icon={<BarChart3 className="w-12 h-12 mx-auto text-slate-600" />}
+            icon={<BarChart3 className="w-12 h-12 mx-auto text-slate-400" />}
             title="No reports generated"
             description="Click 'Generate New Report' to create a comprehensive PDF summary of your current performance metrics."
           />

@@ -45,12 +45,12 @@ export function MetricCard({
           </span>
         )}
       </div>
-      <div className={cn('text-2xl font-bold mb-0.5 tabular-nums', valueColor ?? 'text-white')}>
+      <div className={cn('text-2xl font-bold mb-0.5 tabular-nums', valueColor ?? 'text-slate-900')}>
         {value}
       </div>
-      <div className="text-sm text-slate-400">{title}</div>
+      <div className="text-sm text-slate-500">{title}</div>
       {(subtitle || changeLabel) && (
-        <div className="text-xs text-slate-500 mt-1">{subtitle ?? changeLabel}</div>
+        <div className="text-xs text-slate-400 mt-1">{subtitle ?? changeLabel}</div>
       )}
     </div>
   );
@@ -87,7 +87,7 @@ export function StatusBadge({ status, children }: StatusBadgeProps) {
     pending: 'badge-pending',
     pending_review: 'badge-pending',
     completed: 'badge-done',
-    rejected: 'text-red-400 bg-red-400/10 border border-red-400/30',
+    rejected: 'text-red-700 bg-red-100 border border-red-200',
   }[status] ?? 'badge-done';
 
   return (
@@ -105,8 +105,8 @@ export function SectionHeader({
   return (
     <div className="flex items-start justify-between mb-6">
       <div>
-        <h1 className="text-xl font-bold text-white">{title}</h1>
-        {subtitle && <p className="text-slate-400 text-sm mt-0.5">{subtitle}</p>}
+        <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+        {subtitle && <p className="text-slate-500 text-sm mt-0.5">{subtitle}</p>}
       </div>
       {action}
     </div>
@@ -115,7 +115,7 @@ export function SectionHeader({
 
 export function LoadingSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn('animate-pulse bg-slate-800 rounded-xl', className)} />
+    <div className={cn('animate-pulse bg-slate-200 rounded-xl', className)} />
   );
 }
 
@@ -123,8 +123,8 @@ export function EmptyState({ icon, title, description }: { icon: ReactNode; titl
   return (
     <div className="glass-card p-12 text-center">
       <div className="text-4xl mb-3">{icon}</div>
-      <h3 className="text-lg font-semibold text-white mb-1">{title}</h3>
-      {description && <p className="text-slate-400 text-sm">{description}</p>}
+      <h3 className="text-lg font-semibold text-slate-900 mb-1">{title}</h3>
+      {description && <p className="text-slate-500 text-sm">{description}</p>}
     </div>
   );
 }

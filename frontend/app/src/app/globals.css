@@ -2,12 +2,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0F172A;
-  --foreground: #F8FAFC;
-  --sidebar-bg: rgba(15, 23, 42, 0.95);
-  --card-bg: rgba(30, 41, 59, 0.7);
-  --card-border: rgba(51, 65, 85, 0.6);
-  --card-border-hover: rgba(59, 130, 246, 0.3);
+  --background: #F4F2EC;
+  --foreground: #1A1A1A;
+  --sidebar-bg: #F4F2EC;
+  --card-bg: #FFFFFF;
+  --card-border: #E8E6E1;
+  --card-border-hover: #D6D3CD;
 }
 
 @theme inline {
@@ -26,19 +26,18 @@ body {
   min-height: 100vh;
 }
 
-/* Glassmorphism card */
+/* Glassmorphism card (updated for light theme) */
 .glass-card {
   background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--card-border);
-  border-radius: 16px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   transition: all 0.3s ease;
 }
 
 .glass-card:hover {
   border-color: var(--card-border-hover);
-  box-shadow: 0 0 24px rgba(59, 130, 246, 0.08);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 /* Sidebar navigation */
@@ -48,19 +47,20 @@ body {
 }
 
 .nav-item:hover {
-  background: rgba(59, 130, 246, 0.1);
-  color: #60A5FA;
+  background: #EAE7E0;
+  color: #1A1A1A;
 }
 
 .nav-item.active {
-  background: rgba(59, 130, 246, 0.15);
-  color: #3B82F6;
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: #FFFFFF;
+  color: #1A1A1A;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 /* Progress bar */
 .progress-bar {
-  background: rgba(51, 65, 85, 0.5);
+  background: #E8E6E1;
   border-radius: 99px;
   overflow: hidden;
   height: 6px;
@@ -74,27 +74,27 @@ body {
 
 /* Status badges */
 .badge-active {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10B981;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: #D1FAE5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
 }
 
 .badge-risk {
-  background: rgba(245, 158, 11, 0.15);
-  color: #F59E0B;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
 }
 
 .badge-pending {
-  background: rgba(99, 102, 241, 0.15);
-  color: #818CF8;
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: #E0E7FF;
+  color: #3730A3;
+  border: 1px solid #C7D2FE;
 }
 
 .badge-done {
-  background: rgba(71, 85, 105, 0.4);
-  color: #94A3B8;
-  border: 1px solid rgba(71, 85, 105, 0.3);
+  background: #F0EEE9;
+  color: #334155;
+  border: 1px solid #E8E6E1;
 }
 
 /* Smooth scrollbar */
@@ -105,7 +105,7 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #D6D3CD;
   border-radius: 99px;
 }
 
@@ -127,7 +127,7 @@ body {
 
 /* Gradient text utility */
 .gradient-text {
-  background: linear-gradient(135deg, #3B82F6, #6366F1, #8B5CF6);
+  background: linear-gradient(135deg, #4A6B53, #D97757);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

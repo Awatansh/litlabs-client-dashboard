@@ -19,7 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 rounded-xl animate-pulse" style={{ background: 'linear-gradient(135deg,#3B82F6,#6366F1)' }} />
           <p className="text-slate-500 text-sm">Loading your dashboard…</p>

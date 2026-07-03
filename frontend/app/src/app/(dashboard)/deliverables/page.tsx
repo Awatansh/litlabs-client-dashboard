@@ -99,36 +99,36 @@ export default function DeliverablesPage() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="glass-card p-5 border-blue-500/20 bg-blue-500/5 cursor-pointer hover:border-blue-500/40 transition-colors">
+        <div className="glass-card p-5 border-blue-200 bg-blue-50 cursor-pointer hover:border-blue-300 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400">
+            <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
               <FolderOpen className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-white">Brand Assets</div>
-              <div className="text-xs text-slate-400">Logos, fonts, guidelines</div>
+              <div className="text-sm font-semibold text-slate-900">Brand Assets</div>
+              <div className="text-xs text-slate-500">Logos, fonts, guidelines</div>
             </div>
           </div>
         </div>
-        <div className="glass-card p-5 border-emerald-500/20 bg-emerald-500/5 cursor-pointer hover:border-emerald-500/40 transition-colors">
+        <div className="glass-card p-5 border-emerald-200 bg-emerald-50 cursor-pointer hover:border-emerald-300 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">
+            <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600">
               <FolderOpen className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-white">Ad Creatives</div>
-              <div className="text-xs text-slate-400">Banners, videos, copy</div>
+              <div className="text-sm font-semibold text-slate-900">Ad Creatives</div>
+              <div className="text-xs text-slate-500">Banners, videos, copy</div>
             </div>
           </div>
         </div>
-        <div className="glass-card p-5 border-purple-500/20 bg-purple-500/5 cursor-pointer hover:border-purple-500/40 transition-colors">
+        <div className="glass-card p-5 border-purple-200 bg-purple-50 cursor-pointer hover:border-purple-300 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400">
+            <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
               <FolderOpen className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-white">Strategy Docs</div>
-              <div className="text-xs text-slate-400">Briefs, plans, research</div>
+              <div className="text-sm font-semibold text-slate-900">Strategy Docs</div>
+              <div className="text-xs text-slate-500">Briefs, plans, research</div>
             </div>
           </div>
         </div>
@@ -138,7 +138,7 @@ export default function DeliverablesPage() {
         {deliverables?.length > 0 ? (
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-slate-800/50 text-xs text-slate-400 border-b border-slate-700/50">
+              <tr className="bg-slate-50 text-xs text-slate-500 border-b border-slate-200">
                 <th className="text-left p-4 font-medium">File Name</th>
                 <th className="text-left p-4 font-medium">Folder</th>
                 <th className="text-left p-4 font-medium">Size</th>
@@ -146,24 +146,24 @@ export default function DeliverablesPage() {
                 <th className="text-right p-4 font-medium">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/30">
+            <tbody className="divide-y divide-slate-200">
               {deliverables.map((file: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
-                <tr key={file.id} className="hover:bg-slate-800/30 transition-colors">
-                  <td className="p-4 text-slate-200 font-medium">
+                <tr key={file.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 text-slate-800 font-medium">
                     <div className="flex items-center gap-3">
-                      <FileText className="w-4 h-4 text-slate-400" />
+                      <FileText className="w-4 h-4 text-slate-500" />
                       {file.name}
                     </div>
                   </td>
-                  <td className="p-4 text-slate-400">{file.folder}</td>
-                  <td className="p-4 text-slate-400">{file.size}</td>
-                  <td className="p-4 text-slate-400">{timeAgo(file.uploaded_at)}</td>
+                  <td className="p-4 text-slate-600">{file.folder}</td>
+                  <td className="p-4 text-slate-600">{file.size}</td>
+                  <td className="p-4 text-slate-600">{timeAgo(file.uploaded_at)}</td>
                   <td className="p-4 text-right">
                     <a
                       href={file.download_url || '#'}
                       target={file.download_url ? "_blank" : undefined}
                       rel="noopener noreferrer"
-                      className="inline-block text-blue-400 hover:text-blue-300"
+                      className="inline-block text-blue-600 hover:text-blue-500"
                     >
                       <Download className="w-4 h-4" />
                     </a>
@@ -174,7 +174,7 @@ export default function DeliverablesPage() {
           </table>
         ) : (
           <EmptyState
-            icon={<FileText className="w-12 h-12 mx-auto text-slate-600" />}
+            icon={<FileText className="w-12 h-12 mx-auto text-slate-400" />}
             title="No deliverables yet"
             description="When we complete work like graphics, reports, or copy, they will appear here for you to download."
           />

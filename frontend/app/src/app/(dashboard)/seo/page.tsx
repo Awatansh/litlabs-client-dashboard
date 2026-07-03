@@ -69,8 +69,8 @@ export default function SEOPage() {
 
       <div className="glass-card p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-white text-sm">Organic Clicks Trend</h3>
-          <span className="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded-lg">30 days</span>
+          <h3 className="font-semibold text-slate-900 text-sm">Organic Clicks Trend</h3>
+          <span className="text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded-lg">30 days</span>
         </div>
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -81,12 +81,12 @@ export default function SEOPage() {
                   <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(51,65,85,0.3)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
               <XAxis dataKey="date" stroke="#64748B" fontSize={10} tickFormatter={(val) => val.slice(5)} />
               <YAxis stroke="#64748B" fontSize={10} />
               <RechartsTooltip
-                contentStyle={{ backgroundColor: '#1E293B', borderColor: '#334155', borderRadius: '8px' }}
-                itemStyle={{ color: '#E2E8F0' }}
+                contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', borderRadius: '8px' }}
+                itemStyle={{ color: '#0F172A' }}
               />
               <Area type="monotone" dataKey="clicks" stroke="#3B82F6" strokeWidth={2} fillOpacity={1} fill="url(#colorClicks)" />
             </AreaChart>
@@ -96,22 +96,22 @@ export default function SEOPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="glass-card p-6">
-          <h3 className="font-semibold text-white mb-4">Top Keywords</h3>
+          <h3 className="font-semibold text-slate-900 mb-4">Top Keywords</h3>
           {kwLoading ? <LoadingSkeleton className="h-64" /> : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-xs text-slate-500 border-b border-slate-700/50">
+                  <tr className="text-xs text-slate-500 border-b border-slate-200">
                     <th className="text-left pb-2 font-medium">Keyword</th>
                     <th className="text-right pb-2 font-medium">Pos</th>
                     <th className="text-right pb-2 font-medium">Clicks</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/30">
+                <tbody className="divide-y divide-slate-200">
                   {keywords?.slice(0, 10).map((kw: any /* eslint-disable-line @typescript-eslint/no-explicit-any */, i: number) => (
-                    <tr key={i} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-2.5 font-medium text-slate-200">{kw.keyword}</td>
-                      <td className="py-2.5 text-right text-slate-300">
+                    <tr key={i} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-2.5 font-medium text-slate-800">{kw.keyword}</td>
+                      <td className="py-2.5 text-right text-slate-600">
                         <div className="flex items-center justify-end gap-1.5">
                           {kw.position}
                           {kw.position_change !== undefined && (
@@ -121,7 +121,7 @@ export default function SEOPage() {
                           )}
                         </div>
                       </td>
-                      <td className="py-2.5 text-right text-slate-400 tabular-nums">{formatNumber(kw.clicks)}</td>
+                      <td className="py-2.5 text-right text-slate-500 tabular-nums">{formatNumber(kw.clicks)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -131,23 +131,23 @@ export default function SEOPage() {
         </div>
 
         <div className="glass-card p-6">
-          <h3 className="font-semibold text-white mb-4">Top Pages</h3>
+          <h3 className="font-semibold text-slate-900 mb-4">Top Pages</h3>
           {tpLoading ? <LoadingSkeleton className="h-64" /> : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-xs text-slate-500 border-b border-slate-700/50">
+                  <tr className="text-xs text-slate-500 border-b border-slate-200">
                     <th className="text-left pb-2 font-medium">Page Path</th>
                     <th className="text-right pb-2 font-medium">Clicks</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/30">
+                <tbody className="divide-y divide-slate-200">
                   {topPages?.slice(0, 10).map((p: any /* eslint-disable-line @typescript-eslint/no-explicit-any */, i: number) => (
-                    <tr key={i} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-2.5 font-medium text-blue-400 truncate max-w-[200px]" title={p.page}>
+                    <tr key={i} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-2.5 font-medium text-blue-600 truncate max-w-[200px]" title={p.page}>
                         {p.page.replace('https://www.brightfuturewellness.com', '')}
                       </td>
-                      <td className="py-2.5 text-right text-slate-300 tabular-nums">{formatNumber(p.clicks)}</td>
+                      <td className="py-2.5 text-right text-slate-600 tabular-nums">{formatNumber(p.clicks)}</td>
                     </tr>
                   ))}
                 </tbody>
