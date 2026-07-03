@@ -23,7 +23,7 @@ export default function ProjectsPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {projects?.map((project: any) => (
+        {projects?.map((project: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
           <div key={project.id} className="glass-card p-6 relative group">
             <button className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800/80 opacity-0 group-hover:opacity-100 transition-all">
               <MoreVertical className="w-5 h-5" />

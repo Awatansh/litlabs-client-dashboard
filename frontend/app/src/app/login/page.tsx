@@ -2,11 +2,9 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const router = useRouter();
   const [email, setEmail] = useState('owner@brightfuture.com');
   const [password, setPassword] = useState('Litlabs2025!');
   const [error, setError] = useState('');

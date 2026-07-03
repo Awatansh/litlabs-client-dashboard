@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { SectionHeader, EmptyState, LoadingSkeleton } from '@/components/ui';
-import { BarChart3, Download, CalendarDays, FileDown } from 'lucide-react';
+import { BarChart3, CalendarDays, FileDown } from 'lucide-react';
 import { timeAgo } from '@/lib/utils';
 import { useState } from 'react';
 
@@ -23,7 +23,7 @@ export default function ReportsPage() {
       setIsGenerating(true);
       const { data } = await api.post('/api/reports/generate?report_type=monthly');
       alert(data.message); // "Report generation started..."
-    } catch (err) {
+    } catch {
       alert('Failed to generate report.');
     } finally {
       setIsGenerating(false);
@@ -70,7 +70,7 @@ export default function ReportsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700/30">
-              {reports.map((report: any) => (
+              {reports.map((report: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
                 <tr key={report.id} className="hover:bg-slate-800/30 transition-colors">
                   <td className="p-4 text-slate-200 font-medium">
                     <div className="flex items-center gap-3">

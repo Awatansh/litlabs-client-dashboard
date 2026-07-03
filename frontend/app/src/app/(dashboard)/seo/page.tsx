@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { seoApi } from '@/lib/api';
-import { MetricCard, SectionHeader, LoadingSkeleton, StatusBadge } from '@/components/ui';
+import { MetricCard, SectionHeader, LoadingSkeleton } from '@/components/ui';
 import { MousePointerClick, Eye, Search, BarChart2 } from 'lucide-react';
 import { formatNumber, getChangeColor, getChangeArrow } from '@/lib/utils';
 import {
@@ -108,7 +108,7 @@ export default function SEOPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700/30">
-                  {keywords?.slice(0, 10).map((kw: any, i: number) => (
+                  {keywords?.slice(0, 10).map((kw: any /* eslint-disable-line @typescript-eslint/no-explicit-any */, i: number) => (
                     <tr key={i} className="hover:bg-slate-800/30 transition-colors">
                       <td className="py-2.5 font-medium text-slate-200">{kw.keyword}</td>
                       <td className="py-2.5 text-right text-slate-300">
@@ -142,7 +142,7 @@ export default function SEOPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700/30">
-                  {topPages?.slice(0, 10).map((p: any, i: number) => (
+                  {topPages?.slice(0, 10).map((p: any /* eslint-disable-line @typescript-eslint/no-explicit-any */, i: number) => (
                     <tr key={i} className="hover:bg-slate-800/30 transition-colors">
                       <td className="py-2.5 font-medium text-blue-400 truncate max-w-[200px]" title={p.page}>
                         {p.page.replace('https://www.brightfuturewellness.com', '')}

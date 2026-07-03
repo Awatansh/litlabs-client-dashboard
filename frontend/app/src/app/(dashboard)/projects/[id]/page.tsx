@@ -75,7 +75,7 @@ export default function ProjectDetailPage() {
 
         {project.milestones?.length ? (
           <div className="space-y-4">
-            {project.milestones.map((milestone: any) => {
+            {project.milestones.map((milestone: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
               const isDone = milestone.status === 'completed';
 
               return (

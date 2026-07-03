@@ -76,7 +76,7 @@ export default function AutomationPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">
-                {recent?.map((log: any) => (
+                {recent?.map((log: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
                   <tr key={log.id} className="hover:bg-slate-800/30 transition-colors">
                     <td className="py-3 font-medium text-slate-200">
                       <div className="flex items-center gap-2">

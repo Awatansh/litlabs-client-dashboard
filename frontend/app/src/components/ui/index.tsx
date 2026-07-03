@@ -1,4 +1,4 @@
-import { cn, getChangeArrow, getChangeColor } from '@/lib/utils';
+import { cn, getChangeArrow } from '@/lib/utils';
 import { ReactNode } from 'react';
 
 interface MetricCardProps {

@@ -10,6 +10,7 @@ Thumbs.db
 Desktop.ini
 .vscode/
 .idea/
+pyrightconfig.json
 *.swp
 *.swo
 

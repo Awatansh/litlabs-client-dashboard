@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, TrendingUp, Search, Zap,
   FolderKanban, CheckCircle, FileText, BarChart3,
-  Bell, LogOut, X
+  LogOut, X
 } from 'lucide-react';
 
 const navItems = [

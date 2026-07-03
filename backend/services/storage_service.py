@@ -43,3 +43,16 @@ class StorageService:
 
     def delete_object(self, object_key: str):
         self.client.remove_object(settings.MINIO_BUCKET, object_key)
+
+    def upload_pdf_bytes(self, client_id: str, filename: str, pdf_bytes: bytes) -> str:
+        """Upload PDF bytes directly to MinIO and return the object key."""
+        import io
+        object_key = f"{client_id}/{uuid.uuid4()}/{filename}"
+        self.client.put_object(
+            settings.MINIO_BUCKET,
+            object_key,
+            data=io.BytesIO(pdf_bytes),
+            length=len(pdf_bytes),
+            content_type="application/pdf"
+        )
+        return object_key

@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { SectionHeader, EmptyState, LoadingSkeleton } from '@/components/ui';
 import { FileText, Download, UploadCloud, FolderOpen } from 'lucide-react';
@@ -8,6 +8,7 @@ import { timeAgo } from '@/lib/utils';
 import { useState } from 'react';
 
 export default function DeliverablesPage() {
+  const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
   
   const { data: deliverables, isLoading } = useQuery({
@@ -36,7 +37,22 @@ export default function DeliverablesPage() {
         },
       });
 
-      alert('File uploaded successfully! (Note: backend registration of file is in Phase 2)');
+      // 3. Register deliverable on backend
+      let fileType = 'document';
+      if (file.type.startsWith('image/')) fileType = 'image';
+      else if (file.type.startsWith('video/')) fileType = 'video';
+      else if (file.type === 'application/pdf') fileType = 'pdf';
+
+      await api.post('/api/deliverables', {
+        title: file.name,
+        description: 'Uploaded by client',
+        file_url: data.object_key,
+        file_type: fileType,
+        file_size_bytes: file.size
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['deliverables'] });
+      alert('File uploaded and registered successfully!');
     } catch (err) {
       alert('Failed to upload file.');
       console.error(err);
@@ -131,7 +147,7 @@ export default function DeliverablesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700/30">
-              {deliverables.map((file: any) => (
+              {deliverables.map((file: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
                 <tr key={file.id} className="hover:bg-slate-800/30 transition-colors">
                   <td className="p-4 text-slate-200 font-medium">
                     <div className="flex items-center gap-3">

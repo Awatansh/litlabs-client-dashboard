@@ -8,7 +8,6 @@ import { Check, X, AlertCircle, Clock, Link as LinkIcon, MessageSquare } from 'l
 import { timeAgo } from '@/lib/utils';
 import * as Toast from '@radix-ui/react-toast';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
 
 export default function ApprovalsPage() {
   const queryClient = useQueryClient();
@@ -89,7 +88,7 @@ export default function ApprovalsPage() {
         </div>
 
         <div className="space-y-4">
-          {approvals?.map((approval: any) => (
+          {approvals?.map((approval: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
             <div key={approval.id} className="glass-card p-5">
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-3">

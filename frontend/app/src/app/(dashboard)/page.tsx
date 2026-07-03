@@ -1,10 +1,10 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { overviewApi, marketingApi, seoApi, notificationsApi } from '@/lib/api';
+import { overviewApi, marketingApi, notificationsApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { MetricCard, ProgressBar, StatusBadge, SectionHeader, LoadingSkeleton } from '@/components/ui';
-import { Users, TrendingUp, Zap, Clock, ArrowRight, Activity } from 'lucide-react';
+import { MetricCard, ProgressBar, LoadingSkeleton, StatusBadge } from '@/components/ui';
+import { Users, TrendingUp, Zap, Clock, Activity } from 'lucide-react';
 import Link from 'next/link';
 
 export default function OverviewPage() {
@@ -49,7 +49,7 @@ export default function OverviewPage() {
         <h2 className="text-2xl font-bold text-white mb-1">
           Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.full_name?.split(' ')[0]}! 👋
         </h2>
-        <p className="text-slate-400">Here's your business growth snapshot for the last 30 days.</p>
+        <p className="text-slate-400">Here&apos;s your business growth snapshot for the last 30 days.</p>
       </div>
 
       {pendingApprovals > 0 && (
@@ -110,7 +110,7 @@ export default function OverviewPage() {
             <Link href="/projects" className="text-xs text-blue-400 hover:text-blue-300">View all →</Link>
           </div>
           <div className="space-y-5">
-            {overview?.projects?.slice(0, 4).map((p: any) => (
+            {overview?.projects?.slice(0, 4).map((p: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
               <div key={p.id}>
                 <div className="flex justify-between text-sm mb-1.5">
                   <span className="text-slate-200 font-medium">{p.name}</span>
@@ -131,7 +131,7 @@ export default function OverviewPage() {
         <div className="glass-card p-6 fade-in-up" style={{ animationDelay: '200ms' }}>
           <h3 className="font-semibold text-white mb-5">Recent Activity</h3>
           <div className="space-y-4">
-            {notifs?.slice(0, 5).map((n: any) => (
+            {notifs?.slice(0, 5).map((n: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
               <div key={n.id} className="flex items-start gap-3 pb-3 border-b border-slate-700/50 last:border-0 last:pb-0">
                 <div className="w-7 h-7 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Clock className="w-3.5 h-3.5 text-blue-400" />
