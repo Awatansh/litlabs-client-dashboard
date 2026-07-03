@@ -15,13 +15,14 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
-    # MinIO
+    # MinIO / Supabase Storage
     MINIO_ENDPOINT: str = "localhost:9000"
     MINIO_ACCESS_KEY: str = "minioadmin"
     MINIO_SECRET_KEY: str = "minioadmin"
     MINIO_BUCKET: str = "litlabs-deliverables"
     MINIO_SECURE: bool = False
     PRESIGNED_URL_EXPIRY: int = 3600
+    SUPABASE_SERVICE_KEY: Optional[str] = None
 
     # Meta Ads (empty = mock mode)
     META_ACCESS_TOKEN: Optional[str] = None
