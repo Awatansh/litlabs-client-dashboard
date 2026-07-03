@@ -1,39 +1,60 @@
 # LitLabs Client Dashboard
 
-LitLabs Client Dashboard is a full-stack client portal for agency delivery. It combines a Next.js frontend with a FastAPI backend to give clients one place to:
+> **Live Demo:** [litlabs-dashboard.vercel.app](https://litlabs-dashboard.vercel.app/) &nbsp;|&nbsp; **Backend API:** [litlabs-api.onrender.com](https://litlabs-api.onrender.com)
+>
+> **Demo credentials:** `owner@brightfuture.com` / `Litlabs2025!`
 
-- review business performance
-- monitor projects and milestones
-- approve or reject deliverables
-- browse uploaded assets
-- view SEO and marketing metrics
-- track automation activity
-- access generated reports
+> [!WARNING]
+> **Render Cold Start:** The backend is hosted on Render's free tier. If it hasn't been accessed recently, the first request may take **30–60 seconds** to wake up. Subsequent requests will be instant. Just wait a moment on first load and refresh if the login hangs.
 
-The project is currently set up primarily for local development with seeded demo data and mock integrations. Live integrations are supported behind environment variables, but several areas are still intentionally partial or stubbed.
+---
+
+A full-stack client portal for agency delivery. Clients get one place to:
+
+- Review business performance across marketing, SEO & Google Ads
+- Monitor projects and milestones
+- Approve or reject deliverables
+- Browse uploaded assets
+- Track automation activity
+- Access generated PDF reports
+
+---
 
 ## Tech Stack
 
-### Frontend
+| Layer | Technology |
+|---|---|
+| **Frontend** | Next.js 16 (App Router), React 19, TypeScript |
+| **Styling** | Tailwind CSS v4 |
+| **State / Data** | TanStack Query, Axios |
+| **Charts** | Recharts |
+| **UI Primitives** | Radix UI |
+| **Backend** | FastAPI, Python 3.11 |
+| **Database** | SQLAlchemy 2.0 async + asyncpg (Postgres) |
+| **Auth** | JWT (access + refresh tokens) |
+| **Storage** | Supabase Storage (via REST API) |
+| **PDF Generation** | fpdf2 |
+| **Frontend Host** | Vercel |
+| **Backend Host** | Render |
+| **Database Host** | Supabase (Postgres) |
 
-- Next.js 16 App Router
-- React 19
-- TypeScript
-- Tailwind CSS v4
-- TanStack Query
-- Axios
-- Recharts
-- Radix UI primitives
+---
 
-### Backend
+## Deployment
 
-- FastAPI
-- SQLAlchemy 2.0 async
-- SQLite by default via `aiosqlite`
-- `asyncpg` support remains available for future Postgres deployments
-- JWT authentication
-- MinIO for object storage
-- fpdf2 used for PDF report generation
+| Service | URL |
+|---|---|
+| Frontend (Vercel) | https://litlabs-dashboard.vercel.app/ |
+| Backend API (Render) | https://litlabs-api.onrender.com |
+| Swagger / API Docs | https://litlabs-api.onrender.com/docs |
+
+> [!NOTE]
+> **Storage:** File uploads and PDF reports are stored in Supabase Storage. The backend uses the Supabase Storage REST API (via `httpx`) — **not** boto3 or the MinIO Python library — because Supabase's S3-compatible endpoint does not support the boto3 redirect flow.
+
+> [!IMPORTANT]
+> **Local Docker Compose:** The Docker Compose workflow uses a local MinIO container (`minio:9000`). MinIO does not implement the Supabase Storage REST API, so file upload and report download features **will not work** in Docker unless you swap the storage credentials to point at Supabase cloud instead of local MinIO.
+
+---
 
 ## Repository Layout
 
@@ -43,238 +64,129 @@ The project is currently set up primarily for local development with seeded demo
 │   ├── auth/                # JWT helpers and auth dependencies
 │   ├── mock_data/           # Mock marketing and SEO payloads
 │   ├── routers/             # FastAPI route modules
-│   ├── scripts/             # Seed script for demo data
-│   ├── services/            # Integration and storage services
+│   ├── scripts/             # seed.py — creates demo client and uploads PDFs
+│   ├── services/            # storage_service.py (Supabase REST), integrations
 │   ├── tests/               # API and integration tests
-│   ├── config.py            # Environment-backed settings
-│   ├── database.py          # Async engine and DB session dependency
-│   ├── main.py              # FastAPI entry point
-│   ├── models.py            # SQLAlchemy models
+│   ├── config.py            # Environment-backed settings (pydantic-settings)
+│   ├── database.py          # Async SQLAlchemy engine and session dependency
+│   ├── main.py              # FastAPI entry point and lifespan
+│   ├── models.py            # SQLAlchemy ORM models
 │   └── requirements.txt
 ├── frontend/
-│   ├── app/                 # Actual Next.js application root
-│   │   ├── src/app/         # App Router pages and layouts
-│   │   ├── src/components/  # Shared UI and shell components
-│   │   ├── src/contexts/    # Auth provider
-│   │   └── src/lib/         # API client and utils
-│   └── demo.html            # Standalone design/demo artifact
+│   └── app/                 # Next.js application root
+│       ├── src/app/         # App Router pages and layouts
+│       ├── src/components/  # Shared UI and shell components
+│       ├── src/contexts/    # AuthContext (JWT storage)
+│       └── src/lib/         # Axios API client with auto-refresh
 ├── docker-compose.yml
 ├── .env.example
-├── IMPLEMENTATION.md
-├── INTEGRATIONS.md
-└── PRD.md
+└── deployment.md            # Step-by-step production deployment guide
 ```
 
-## Architecture Overview
+---
 
-### Frontend Architecture
+## Architecture
 
-The frontend lives in `frontend/app`, not directly in `frontend/`.
+```
+Browser
+  │
+  ▼
+Vercel (Next.js)
+  │  NEXT_PUBLIC_API_URL
+  ▼
+Render (FastAPI + uvicorn)
+  │                    │
+  ▼                    ▼
+Supabase Postgres    Supabase Storage
+(asyncpg pooler)     (REST API via httpx)
+```
 
-Key pieces:
+### Authentication Flow
 
-- `src/app/layout.tsx`
-  - wraps the app in `QueryProvider` and `AuthProvider`
-- `src/app/login/page.tsx`
-  - login screen with demo credentials prefilled
-- `src/app/(dashboard)/layout.tsx`
-  - protected app shell
-  - redirects unauthenticated users to `/login`
-- `src/components/layout/Sidebar.tsx`
-  - left navigation for dashboard areas
-- `src/components/layout/TopBar.tsx`
-  - polling unread notification count and shared header
-- `src/lib/api.ts`
-  - central Axios client
-  - attaches JWT access token
-  - refreshes access token on `401`
-- `src/contexts/AuthContext.tsx`
-  - stores user and tokens in `localStorage`
+1. User posts credentials to `POST /auth/token`
+2. Backend returns `access_token` + `refresh_token`
+3. Frontend stores both in `localStorage`
+4. All API requests attach the bearer token
+5. On `401`, the frontend silently calls `POST /auth/refresh`
+6. All routes scope data to `current_user.client_id` — multi-tenant isolation
 
-Dashboard routes currently implemented:
+### API Routes
 
-- `/` dashboard overview
-- `/marketing`
-- `/seo`
-- `/automation`
-- `/projects`
-- `/approvals`
-- `/deliverables`
-- `/reports`
-- `/login`
+| Prefix | Description |
+|---|---|
+| `/auth` | Login, token refresh |
+| `/api/overview` | Dashboard landing aggregates |
+| `/api/projects` | Projects and milestones |
+| `/api/deliverables` | Deliverables + Supabase upload URLs |
+| `/api/approvals` | Approve / reject / request changes |
+| `/api/marketing` | Campaign metrics (live or mock) |
+| `/api/seo` | SEO overview, keywords, top pages |
+| `/api/automation` | Automation logs and webhook ingestion |
+| `/api/reports` | PDF report list and download URLs |
+| `/api/notifications` | Unread count, list, mark read |
 
-Each page fetches directly from the backend using TanStack Query.
-
-### Backend Architecture
-
-The backend is a FastAPI app with modular routers under `backend/routers`.
-
-Key pieces:
-
-- `main.py`
-  - creates the app
-  - enables CORS for `http://localhost:3000` and `http://localhost:3001`
-  - creates database tables on startup
-- `config.py`
-  - reads runtime settings from `.env`
-- `database.py`
-  - creates async SQLAlchemy engine and session factory
-- `models.py`
-  - defines clients, users, projects, milestones, deliverables, approvals, marketing metrics, SEO metrics, automation logs, notifications, activity logs, and reports
-- `auth/jwt.py`
-  - hashes passwords and issues/verifies JWTs
-- `auth/dependencies.py`
-  - authenticates bearer tokens and exposes role guard helpers
-
-Primary API areas:
-
-- `/auth`
-  - login and token refresh
-- `/api/overview`
-  - aggregated counts for dashboard landing page
-- `/api/projects`
-  - list and detail for client projects
-- `/api/deliverables`
-  - list deliverables and generate MinIO upload URLs
-- `/api/approvals`
-  - list pending/history items and approve/reject/request changes
-- `/api/marketing`
-  - marketing overview, campaigns, channel breakdown
-- `/api/seo`
-  - SEO overview, keywords, top pages
-- `/api/automation`
-  - automation summary, recent runs, webhook event ingestion
-- `/api/reports`
-  - list reports and stub report generation
-- `/api/notifications`
-  - list notifications, unread count, mark read
-
-## Data and Auth Flow
-
-1. The user signs in from the frontend login page.
-2. The frontend posts credentials to `POST /auth/token`.
-3. The backend returns `access_token`, `refresh_token`, and a user payload.
-4. The frontend stores these in `localStorage`.
-5. All later frontend API requests attach the bearer token.
-6. If a request returns `401`, the frontend calls `POST /auth/refresh`.
-7. Most backend routes scope data to `current_user.client_id`, which is the main multi-tenant isolation mechanism.
-
-## Demo Credentials
-
-The seed script creates a demo tenant and users.
-
-- Owner login: `owner@brightfuture.com`
-- Password: `Litlabs2025!`
-
-The login page also pre-fills these values.
-
-## Integrations and Runtime Modes
-
-The project supports both mock mode and live mode.
-
-### Mock mode
-
-Used when external credentials are not configured.
-
-- Meta Ads falls back to mock responses
-- GA4 falls back to mock responses
-- Google Search Console falls back to mock responses
-
-This is the easiest way to run the project locally.
-
-### Live mode
-
-Enabled by filling the relevant environment variables for:
-
-- Meta Ads
-- Google Analytics 4
-- Google Search Console
-- Google Ads
-- LinkedIn Ads
-- HubSpot
-- MinIO
-
-See `.env.example` for the full list.
+---
 
 ## Environment Variables
 
-The canonical template is the root `.env.example`.
+### Backend (`backend/.env`)
 
-Important variables:
+```env
+# Database — use Supabase pooler URL in production
+DATABASE_URL=postgresql+asyncpg://postgres.yourproject:password@aws-X-region.pooler.supabase.com:5432/postgres
 
-- `DATABASE_URL`
-- `JWT_SECRET`
-- `MINIO_ENDPOINT`
-- `MINIO_ACCESS_KEY`
-- `MINIO_SECRET_KEY`
-- `MINIO_BUCKET`
-- `NEXT_PUBLIC_API_URL`
-- `META_ACCESS_TOKEN`
-- `GOOGLE_SERVICE_ACCOUNT_JSON`
-- `GOOGLE_SEARCH_CONSOLE_SITE_URL`
-- `GA4_PROPERTY_ID`
-- `WEBHOOK_SECRET_KEY`
+# Auth
+JWT_SECRET=your-secret-at-least-32-chars
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=30
 
-### Important config note
+# Supabase Storage
+MINIO_ENDPOINT=https://yourproject.storage.supabase.co/storage/v1/s3
+MINIO_ACCESS_KEY=your-s3-access-key-id
+MINIO_SECRET_KEY=your-s3-secret-access-key
+MINIO_BUCKET=litlabs-deliverables
+MINIO_SECURE=true
+SUPABASE_SERVICE_KEY=your-supabase-service-role-jwt   # Required for REST API uploads
+PRESIGNED_URL_EXPIRY=3600
+```
 
-The backend now reads environment variables from the repository root `.env` in both local and Docker workflows. Docker Compose only overrides the values that must differ inside containers, such as the internal MinIO hostname.
+> [!CAUTION]
+> `SUPABASE_SERVICE_KEY` is the **service_role** JWT from Supabase → Project Settings → API. Never expose it client-side. Add it as an environment variable in Render.
 
-For the frontend:
+### Frontend (`frontend/app/.env.local`)
 
-- local development uses `frontend/app/.env.local`
-- Docker Compose injects `NEXT_PUBLIC_API_URL` directly
+```env
+NEXT_PUBLIC_API_URL=https://litlabs-api.onrender.com/api
+```
 
-## Quick Start
+---
 
-Choose one run method:
+## Quick Start — Local Development (npm + uvicorn)
 
-1. Local: run backend and frontend directly on your machine, with MinIO only for uploads.
-2. Docker: run frontend, backend, and MinIO together with `docker compose`.
-
-## How To Run Locally
+> [!TIP]
+> This is the recommended local setup. No Docker required.
 
 ### Prerequisites
 
-- Node.js 20+
-- npm
-- Python 3.11 or 3.12
-- Docker Desktop or a local MinIO instance for uploads
+- Python 3.11+
+- Node.js 20+ and npm
+- A Supabase project (for storage) or leave uploads disabled
 
-### 1. Start MinIO
-
-The app now uses SQLite by default, so you do not need Postgres for the standard local workflow.
-
-If you want the deliverables upload flow to work locally, start MinIO. The simplest option is Docker:
+### 1. Clone and configure
 
 ```powershell
-docker run --name litlabs-minio -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin -p 9000:9000 -p 9001:9001 -d minio/minio server /data --console-address ":9001"
-```
-
-### 2. Configure backend environment
-
-Copy the root example file to `.env` if you have not already:
-
-```powershell
+git clone https://github.com/your-org/litlabs-dashboard.git
+cd litlabs-dashboard
 Copy-Item .env.example .env
 ```
 
-```env
-DATABASE_URL=sqlite+aiosqlite:///./dashboard.db
-MINIO_ENDPOINT=localhost:9000
-MINIO_ACCESS_KEY=minioadmin
-MINIO_SECRET_KEY=minioadmin
-MINIO_BUCKET=litlabs-deliverables
-MINIO_SECURE=false
-JWT_SECRET=dev-secret-change-in-production-at-least-32-chars
-```
+Edit `.env` with your credentials (or leave defaults to run in mock mode with SQLite).
 
-Leave third-party integration variables empty to stay in mock mode.
-
-### 3. Start the backend
-
-From `backend/`:
+### 2. Start the backend
 
 ```powershell
+cd backend
 python -m venv venv
 .\venv\Scripts\activate
 pip install -r requirements.txt
@@ -282,175 +194,94 @@ python scripts\seed.py
 uvicorn main:app --reload --port 8000
 ```
 
-Or use the provided helper:
+| URL | Description |
+|---|---|
+| `http://localhost:8000` | API root |
+| `http://localhost:8000/docs` | Swagger UI |
+| `http://localhost:8000/health` | Health check |
+
+### 3. Start the frontend
 
 ```powershell
-.\run_backend.ps1
-```
-
-Backend URLs:
-
-- API: `http://localhost:8000`
-- Health check: `http://localhost:8000/health`
-- Swagger UI: `http://localhost:8000/docs`
-
-### 4. Configure the frontend
-
-From `frontend/app/`, copy `.env.local.example` to `.env.local`:
-
-```powershell
-Copy-Item .env.local.example .env.local
-```
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
-### 5. Start the frontend
-
-From `frontend/app/`:
-
-```powershell
+cd frontend/app
 npm install
 npm run dev
 ```
 
-Frontend URL:
+Open `http://localhost:3000` and log in with `owner@brightfuture.com` / `Litlabs2025!`
 
-- App: `http://localhost:3000`
+---
 
-## How To Run With Docker Compose
+## Docker Compose
 
-The Compose workflow is now aligned with the local workflow:
-
-- SQLite-backed backend
-- MinIO for uploads
-- Next.js frontend served from `frontend/app`
-- automatic demo-data refresh on backend startup
-
-### Prerequisites
-
-- Docker Desktop
-- port `3000` available for the frontend
-- port `8000` available for the backend
-- ports `9000` and `9001` available for MinIO
-
-### 1. Configure environment
-
-Copy the root example file if needed:
+> [!WARNING]
+> **Storage limitation:** Docker Compose uses a local MinIO container which does not implement the Supabase Storage REST API. File upload and PDF download features will fail unless you configure the storage env vars to point at Supabase cloud instead of `minio:9000`.
 
 ```powershell
-Copy-Item .env.example .env
-```
-
-For the standard Docker path, the default `.env` values are already correct. Compose overrides the internal MinIO hostname automatically.
-
-### 2. Build and start the stack
-
-Run from the repository root:
-
-```powershell
+# From repo root
 docker compose up --build
 ```
 
-To run in the background:
-
-```powershell
-docker compose up --build -d
-```
-
-Service URLs:
-
-- Frontend: `http://localhost:3000`
-- Backend API: `http://localhost:8000`
-- MinIO API: `http://localhost:9000`
-- MinIO console: `http://localhost:9001`
-
-### 3. Stop the stack
+| URL | Description |
+|---|---|
+| `http://localhost:3000` | Frontend |
+| `http://localhost:8000` | Backend API |
+| `http://localhost:9000` | MinIO S3 API |
+| `http://localhost:9001` | MinIO console |
 
 ```powershell
 docker compose down
 ```
 
-### Docker troubleshooting
-
-If port `3000` is already occupied on your machine, either stop the process using that port or temporarily change the frontend mapping in [docker-compose.yml](C:/Users/awatansh/Documents/Dev/dashboard/docker-compose.yml) from:
-
-```yaml
-- "3000:3000"
-```
-
-to:
-
-```yaml
-- "3001:3000"
-```
-
-Then open `http://localhost:3001` instead.
+---
 
 ## Seeding Demo Data
 
-The seed script:
-
-- creates tables
-- creates the demo client `Bright Future Wellness`
-- creates demo users
-- inserts projects, milestones, deliverables, approvals, automation logs, notifications, and reports
-
-Run it from `backend/`:
+The seed script creates the full demo tenant, inserts realistic data, generates PDF reports and uploads them to Supabase Storage.
 
 ```powershell
+cd backend
 python scripts\seed.py
 ```
 
-It is idempotent for the demo client check and will skip reseeding if the demo tenant already exists.
+It is safe to run multiple times — it skips reseeding if the demo client already exists.
 
-## Tests
+**Demo tenant:**
 
-Backend tests live in `backend/tests`.
+| Field | Value |
+|---|---|
+| Company | Bright Future Wellness |
+| Owner login | `owner@brightfuture.com` |
+| Password | `Litlabs2025!` |
 
-Run them from `backend/`:
+---
+
+## Running Tests
 
 ```powershell
+cd backend
 pytest
 ```
 
-Test coverage includes:
+Coverage includes auth flow, token refresh, route protection, multi-tenant isolation, and mock integration response schemas.
 
-- login/auth behavior
-- token refresh
-- route protection
-- multi-tenant data isolation
-- mock integration response schemas
+---
 
-## Known Gaps and Current Caveats
+## Known Caveats
 
-These are worth knowing before extending or deploying the app:
+| Area | Status |
+|---|---|
+| Storage in Docker | ⚠️ MinIO container does not support Supabase Storage REST API |
+| Render cold starts | ⚠️ Free tier sleeps after inactivity — first request takes 30–60s |
+| File uploads | 🔑 Require `SUPABASE_SERVICE_KEY` to be set |
+| Third-party integrations | 🔵 Mock mode by default; enable with env vars |
+| DB migrations | ℹ️ Uses `Base.metadata.create_all()` — no Alembic migrations yet |
 
-- the checked-in virtual environments and dependency folders should not be treated as canonical; use `pip install -r requirements.txt` and `npm install` if your local copies drift.
+---
 
-## Validation Notes
+## Suggested Next Steps
 
-During analysis, I verified:
-
-- backend startup path from `backend/main.py`
-- auth flow and seeded demo credentials
-- frontend route structure and shared providers
-- backend route modules and data model layout
-
-I also ran a quick validation pass:
-
-- `npm run build` succeeds in `frontend/app`
-- `pytest` succeeds in `backend` with `27 passed`
-- `docker compose config` succeeds
-- `docker compose build backend frontend` succeeds
-- the Compose backend serves `GET /health` successfully
-- the frontend image serves successfully; during validation I used port `3001` because port `3000` was already occupied on this machine
-
-## Suggested Next Improvements
-
-If you want to make the project more production-ready, the highest-value next steps are:
-
-1. move timestamp handling to timezone-aware UTC datetimes
-2. add migrations instead of relying only on `Base.metadata.create_all()`
-3. decide whether production should stay on SQLite or move to Postgres
+1. Add Alembic migrations instead of relying on `create_all()`
+2. Add timezone-aware UTC datetimes throughout
+3. Enable live Meta Ads, GA4, and GSC integrations via env vars
+4. Add per-client user management in the admin interface
