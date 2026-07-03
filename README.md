@@ -33,7 +33,7 @@ The project is currently set up primarily for local development with seeded demo
 - `asyncpg` support remains available for future Postgres deployments
 - JWT authentication
 - MinIO for object storage
-- WeasyPrint dependency installed for future PDF/report generation
+- fpdf2 used for PDF report generation
 
 ## Repository Layout
 
@@ -427,8 +427,6 @@ Test coverage includes:
 
 These are worth knowing before extending or deploying the app:
 
-- deliverable upload currently gets a presigned MinIO URL and uploads the file, but backend-side deliverable registration is still marked as a later phase.
-- report generation is a stub that returns a queued message and does not generate a PDF yet.
 - the checked-in virtual environments and dependency folders should not be treated as canonical; use `pip install -r requirements.txt` and `npm install` if your local copies drift.
 
 ## Validation Notes
@@ -453,8 +451,6 @@ I also ran a quick validation pass:
 
 If you want to make the project more production-ready, the highest-value next steps are:
 
-1. finish deliverable registration and download flows
-2. implement real report generation
-3. move timestamp handling to timezone-aware UTC datetimes
-4. add migrations instead of relying only on `Base.metadata.create_all()`
-5. decide whether production should stay on SQLite or move to Postgres
+1. move timestamp handling to timezone-aware UTC datetimes
+2. add migrations instead of relying only on `Base.metadata.create_all()`
+3. decide whether production should stay on SQLite or move to Postgres
