@@ -86,9 +86,14 @@ export default function ReportsPage() {
                     </div>
                   </td>
                   <td className="p-4 text-right">
-                    <button className="text-blue-400 hover:text-blue-300 font-medium text-xs bg-blue-500/10 px-3 py-1.5 rounded-lg transition-colors">
+                    <a
+                      href={report.download_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block text-blue-400 hover:text-blue-300 font-medium text-xs bg-blue-500/10 px-3 py-1.5 rounded-lg transition-colors"
+                    >
                       Download PDF
-                    </button>
+                    </a>
                   </td>
                 </tr>
               ))}

@@ -8,13 +8,15 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 from database import AsyncSessionLocal, engine, Base
 from models import (
     Client, User, Project, Milestone, Deliverable, Approval,
     AutomationLog, Notification, ActivityLog, Report
 )
 from auth.jwt import hash_password
+from services.storage_service import StorageService
+from fpdf import FPDF
 
 
 DEMO_CLIENT_ID = uuid.UUID("11111111-1111-1111-1111-111111111111")
@@ -212,7 +214,7 @@ async def seed():
                 status=status,
                 tasks_completed=tasks,
                 time_saved_minutes=time_saved,
-                timestamp=datetime.utcnow() - timedelta(hours=i * 6),
+                timestamp=datetime.now(timezone.utc) - timedelta(hours=i * 6),
             )
             db.add(log)
 
@@ -232,22 +234,36 @@ async def seed():
                 message=message,
                 entity_type=entity_type,
                 read=(i > 1),  # First 2 unread
-                created_at=datetime.utcnow() - timedelta(hours=i * 4),
+                created_at=datetime.now(timezone.utc) - timedelta(hours=i * 4),
             )
             db.add(notification)
 
         # Reports
         reports_data = [
-            ("July 2025 Performance Report", "monthly", "https://example.com/report1.pdf", datetime.utcnow() - timedelta(days=2)),
-            ("Q2 Quarterly Strategy Review", "quarterly", "https://example.com/report2.pdf", datetime.utcnow() - timedelta(days=32)),
-            ("Weekly Ad Spend Summary", "weekly", "https://example.com/report3.pdf", datetime.utcnow() - timedelta(days=7)),
+            ("July 2025 Performance Report", "monthly", datetime.now(timezone.utc) - timedelta(days=2)),
+            ("Q2 Quarterly Strategy Review", "quarterly", datetime.now(timezone.utc) - timedelta(days=32)),
+            ("Weekly Ad Spend Summary", "weekly", datetime.now(timezone.utc) - timedelta(days=7)),
         ]
-        for name, rtype, url, created_at in reports_data:
+        
+        storage = StorageService()
+        for name, rtype, created_at in reports_data:
+            # Generate dummy PDF
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("helvetica", size=16)
+            pdf.cell(200, 20, text=f"{name} (Seeded Data)", new_x="LMARGIN", new_y="NEXT", align='C')
+            pdf.set_font("helvetica", size=12)
+            pdf.cell(200, 10, text="This is a dummy report generated during database seeding.", new_x="LMARGIN", new_y="NEXT")
+            pdf_bytes = bytes(pdf.output())
+
+            filename = f"report_{rtype}_{int(created_at.timestamp())}.pdf"
+            object_key = storage.upload_pdf_bytes(str(DEMO_CLIENT_ID), filename, pdf_bytes)
+
             report = Report(
                 client_id=DEMO_CLIENT_ID,
                 name=name,
                 type=rtype,
-                download_url=url,
+                download_url=object_key,
                 created_at=created_at,
             )
             db.add(report)

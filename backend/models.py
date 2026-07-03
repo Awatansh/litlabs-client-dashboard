@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import String, Boolean, DateTime, ForeignKey, Integer, Text, Date, Float, JSON, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base
@@ -14,7 +14,7 @@ class Client(Base):
     website: Mapped[str | None] = mapped_column(String(255))
     industry: Mapped[str | None] = mapped_column(String(100))
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     users: Mapped[list["User"]] = relationship("User", back_populates="client", cascade="all, delete")
     projects: Mapped[list["Project"]] = relationship("Project", back_populates="client", cascade="all, delete")
@@ -31,7 +31,7 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(50), default="manager")  # owner, manager, ops
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     last_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     client: Mapped["Client"] = relationship("Client", back_populates="users")
     notifications: Mapped[list["Notification"]] = relationship("Notification", back_populates="user")
@@ -48,8 +48,8 @@ class Project(Base):
     start_date: Mapped[datetime | None] = mapped_column(Date)
     end_date: Mapped[datetime | None] = mapped_column(Date)
     progress: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     client: Mapped["Client"] = relationship("Client", back_populates="projects")
     milestones: Mapped[list["Milestone"]] = relationship("Milestone", back_populates="project", cascade="all, delete")
@@ -66,7 +66,7 @@ class Milestone(Base):
     due_date: Mapped[datetime] = mapped_column(Date, nullable=False)
     status: Mapped[str] = mapped_column(String(50), default="pending")  # pending, in_progress, completed, overdue
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     project: Mapped["Project"] = relationship("Project", back_populates="milestones")
 
@@ -83,8 +83,8 @@ class Deliverable(Base):
     file_type: Mapped[str | None] = mapped_column(String(50))   # pdf, image, video, doc
     file_size_bytes: Mapped[int | None] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(50), default="draft")  # draft, pending_review, approved, rejected, final
-    uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     project: Mapped["Project | None"] = relationship("Project", back_populates="deliverables")
     approval: Mapped["Approval | None"] = relationship("Approval", back_populates="deliverable", uselist=False)
@@ -97,7 +97,7 @@ class Approval(Base):
     client_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
     deliverable_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("deliverables.id", ondelete="CASCADE"), unique=True)
     requested_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
-    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     due_date: Mapped[datetime | None] = mapped_column(Date)
     status: Mapped[str] = mapped_column(String(50), default="pending")  # pending, approved, rejected, changes_requested
     decided_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
@@ -115,7 +115,7 @@ class MarketingMetric(Base):
     source: Mapped[str] = mapped_column(String(50), nullable=False)  # meta_ads, google_ads, linkedin_ads, google_analytics
     date: Mapped[datetime] = mapped_column(Date, nullable=False)
     metrics: Mapped[dict] = mapped_column(JSON, nullable=False)
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
 class SEOMetric(Base):
@@ -131,7 +131,7 @@ class SEOMetric(Base):
     impressions: Mapped[int | None] = mapped_column(Integer)
     ctr: Mapped[float | None] = mapped_column(Float)
     source: Mapped[str] = mapped_column(String(50), default="google_search_console")
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
 class AutomationLog(Base):
@@ -145,7 +145,7 @@ class AutomationLog(Base):
     tasks_completed: Mapped[int] = mapped_column(Integer, default=0)
     time_saved_minutes: Mapped[int] = mapped_column(Integer, default=0)
     workflow_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
-    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
 class Notification(Base):
@@ -160,7 +160,7 @@ class Notification(Base):
     entity_type: Mapped[str | None] = mapped_column(String(50))
     entity_id: Mapped[uuid.UUID | None] = mapped_column(Uuid(as_uuid=True))
     read: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     user: Mapped["User"] = relationship("User", back_populates="notifications")
 
@@ -176,7 +176,7 @@ class ActivityLog(Base):
     entity_id: Mapped[uuid.UUID | None] = mapped_column(Uuid(as_uuid=True))
     description: Mapped[str | None] = mapped_column(Text)
     action_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
-    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
 class Report(Base):
@@ -187,4 +187,4 @@ class Report(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     type: Mapped[str] = mapped_column(String(100), nullable=False)  # monthly, weekly, custom
     download_url: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

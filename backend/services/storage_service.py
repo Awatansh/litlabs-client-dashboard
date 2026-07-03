@@ -23,10 +23,23 @@ class StorageService:
         if not self.client.bucket_exists(settings.MINIO_BUCKET):
             self.client.make_bucket(settings.MINIO_BUCKET)
 
+    @property
+    def external_client(self):
+        """Client configured for external URL generation (avoids network region lookup)."""
+        # For local Docker dev, we must use localhost:9000 for the signature to match the browser's Host header.
+        endpoint = "localhost:9000" if settings.MINIO_ENDPOINT == "minio:9000" else settings.MINIO_ENDPOINT
+        return Minio(
+            endpoint,
+            access_key=settings.MINIO_ACCESS_KEY,
+            secret_key=settings.MINIO_SECRET_KEY,
+            secure=settings.MINIO_SECURE,
+            region="us-east-1"  # Prevents network lookup
+        )
+
     def generate_upload_url(self, client_id: str, filename: str, content_type: str) -> dict:
         """Generate a presigned PUT URL for file upload (10 min expiry)."""
         object_key = f"{client_id}/{uuid.uuid4()}/{filename}"
-        url = self.client.presigned_put_object(
+        url = self.external_client.presigned_put_object(
             settings.MINIO_BUCKET,
             object_key,
             expires=timedelta(minutes=10),
@@ -35,11 +48,12 @@ class StorageService:
 
     def generate_download_url(self, object_key: str) -> str:
         """Generate a presigned GET URL for file download (1 hour expiry)."""
-        return self.client.presigned_get_object(
+        url = self.external_client.presigned_get_object(
             settings.MINIO_BUCKET,
             object_key,
             expires=timedelta(seconds=settings.PRESIGNED_URL_EXPIRY),
         )
+        return url
 
     def delete_object(self, object_key: str):
         self.client.remove_object(settings.MINIO_BUCKET, object_key)

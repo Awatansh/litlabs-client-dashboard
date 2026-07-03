@@ -32,7 +32,12 @@ export function getChangeArrow(change: number) {
 }
 
 export function timeAgo(dateStr: string): string {
-  const date = new Date(dateStr);
+  // SQLite may return naive ISO strings. If it lacks a timezone offset, append 'Z' to treat as UTC.
+  let parsedStr = dateStr;
+  if (!parsedStr.endsWith('Z') && !parsedStr.match(/[+-]\d{2}:?\d{2}$/)) {
+    parsedStr += 'Z';
+  }
+  const date = new Date(parsedStr);
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
   if (seconds < 60) return 'just now';
   if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;

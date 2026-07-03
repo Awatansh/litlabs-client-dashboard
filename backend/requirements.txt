@@ -24,7 +24,7 @@ google-analytics-data==0.18.8
 # HubSpot (uses httpx directly)
 
 # PDF generation for reports
-weasyprint==62.3
+fpdf2==2.8.7
 
 # Testing
 pytest==8.2.1

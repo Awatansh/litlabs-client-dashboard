@@ -159,9 +159,14 @@ export default function DeliverablesPage() {
                   <td className="p-4 text-slate-400">{file.size}</td>
                   <td className="p-4 text-slate-400">{timeAgo(file.uploaded_at)}</td>
                   <td className="p-4 text-right">
-                    <button className="text-blue-400 hover:text-blue-300">
+                    <a
+                      href={file.download_url || '#'}
+                      target={file.download_url ? "_blank" : undefined}
+                      rel="noopener noreferrer"
+                      className="inline-block text-blue-400 hover:text-blue-300"
+                    >
                       <Download className="w-4 h-4" />
-                    </button>
+                    </a>
                   </td>
                 </tr>
               ))}

@@ -42,11 +42,6 @@ services:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
     depends_on:
       - backend
-    volumes:
-      - ./frontend/app:/app
-      - /app/node_modules
-      - /app/.next
-    command: npm run dev -- --hostname 0.0.0.0
 
 volumes:
   minio_data:
